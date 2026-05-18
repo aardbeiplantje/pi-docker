@@ -39,6 +39,7 @@ RUN npm install -g bun
 RUN npm install -g @ai-sdk/openai-compatible
 ADD --chown=node:node https://opencode.ai/install /tmp/install_opencode.sh
 WORKDIR /workspace
+ARG CACHEBUST=1
 RUN chmod +x /tmp/install_opencode.sh \
     && bash /tmp/install_opencode.sh \
     && opencode run "dummy" \

@@ -16,6 +16,9 @@ variable "DOCKER_IMAGE_NAME" {
 variable "DOCKER_TAG" {
   default = "latest"
 }
+variable "CACHEBUST" {
+  default = "1"
+}
 target "containers" {
   pull = true
   name = "containers-${env}"
@@ -48,7 +51,7 @@ target "containers" {
   platforms = [
     "linux/amd64"
   ]
-  environment = {
-    CACHEBUST = "1"
+  args = {
+    CACHEBUST = "${CACHEBUST}"
   }
 }

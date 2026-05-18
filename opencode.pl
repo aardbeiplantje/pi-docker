@@ -105,8 +105,9 @@ $ENV{PROMPT_COMMAND} = 'history -a';
 $ENV{HISTFILE} = $history_path;
 
 # Set HOME environment variable for node user
-$ENV{HOME} = "/home/node";
+$ENV{HOME} = "/workspace";
 $ENV{LOGNAME} = "node";
+$ENV{OPENCODE_AUTO_SHARE} = "/workspace/.opencode";
 
 # Execute the actual opencode CLI with all provided arguments
 exec("/home/node/.opencode/bin/opencode", @ARGV)
