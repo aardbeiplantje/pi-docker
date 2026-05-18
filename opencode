@@ -26,6 +26,6 @@ exec docker run --rm -it \
     $extra_cmd \
     --name opencode-${LOGNAME}-${BDIR} \
     -v opencode-${LOGNAME}:/workspace \
-    -v "${PWD}":/workspace/workdir \
+    -v "${PWD}":/workspace/$BDIR \
         "$DOCKER_IMAGE" \
             $*
