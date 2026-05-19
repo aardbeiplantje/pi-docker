@@ -10,6 +10,16 @@
       },
       "models": {
         "{env:LLAMA_MODEL}": {
+          "options": {
+            "thinking": {
+              "type": "enabled",
+              "budgetTokens": 1000000
+            },
+            "textVerbosity": "low",
+            "reasoning": "high",
+            "reasoningSummary": "auto",
+            "include": ["reasoning.encrypted_content"]
+          },
           "name": "{env:LLAMA_MODEL}"
         }
       }
