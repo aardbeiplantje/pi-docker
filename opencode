@@ -10,6 +10,8 @@ if [ ! -z "${OPENCODE_CONFIG}" -a -f "${OPENCODE_CONFIG}" ]; then
 fi
 export OPENCODE_CONFIG
 
+export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
+
 extra_opts=
 
 # share ssh keys (dangerous)
@@ -75,6 +77,7 @@ exec docker run --rm -it \
     -e BDIR=/workspace/$BDIR \
     ${DOCKER_HOST_VAR:+-e DOCKER_HOST=$DOCKER_HOST_VAR} \
     ${CONTAINERD_ADDRESS_VAR:+-e CONTAINERD_ADDRESS=$CONTAINERD_ADDRESS_VAR} \
+    ${GIT_SSH_COMMAND:+-e GIT_SSH_COMMAND=$GIT_SSH_COMMAND} \
     -e LLAMA_SERVER_URL \
     -e LLAMA_MODEL \
     --ulimit memlock=-1:-1 \
