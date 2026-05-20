@@ -1,6 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "llama.cpp/{env:LLAMA_MODEL}",
   "provider": {
     "llama.cpp": {
       "npm": "@ai-sdk/openai-compatible",
@@ -24,5 +23,10 @@
         }
       }
     }
+  },
+  "model": "llama.cpp/{env:LLAMA_MODEL}",
+  "permission": {
+      "edit": "allow",
+      "bash": "allow"
   }
 }
