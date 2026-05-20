@@ -1,6 +1,8 @@
-**~
-.*~
+**/*~
+**/.*~
 .git
 LICENSE
 README.md
 Dockerfile
+
+.tmp/
