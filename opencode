@@ -23,24 +23,18 @@ if [ ! -z "$SSH_AUTH_SOCK" ]; then
 fi
 
 # Share Docker socket if available and set DOCKER_HOST
-DOCKER_HOST_VAR=""
 if [ -S /var/run/docker.sock ]; then
     extra_opts="-v /var/run/docker.sock:/var/run/docker.sock $extra_opts"
-    DOCKER_HOST_VAR="unix:///var/run/docker.sock"
-elif [ ! -z "$DOCKER_HOST" ]; then
-    # If DOCKER_HOST is set externally (e.g., remote docker), pass it through
-    DOCKER_HOST_VAR="$DOCKER_HOST"
+    DOCKER_HOST=unix:///var/run/docker.sock
 fi
+export DOCKER_HOST
 
 # Share containerd socket and config
-CONTAINERD_ADDRESS_VAR=""
 if [ -S /run/containerd/containerd.sock ]; then
     extra_opts="-v /run/containerd/containerd.sock:/run/containerd/containerd.sock $extra_opts"
-    CONTAINERD_ADDRESS_VAR="/run/containerd/containerd.sock"
-elif [ ! -z "$CONTAINERD_ADDRESS" ]; then
-    # If CONTAINERD_ADDRESS is set externally, pass it through
-    CONTAINERD_ADDRESS_VAR="$CONTAINERD_ADDRESS"
+    CONTAINERD_ADDRESS=/run/containerd/containerd.sock
 fi
+export CONTAINERD_ADDRESS
 if [ -d /etc/containerd ]; then
     extra_opts="-v /etc/containerd:/etc/containerd:ro $extra_opts"
 fi
@@ -75,9 +69,9 @@ exec docker run --rm -it \
     -e NODE_OPTIONS="--max-old-space-size=4096" \
     -e UID=${EUID} \
     -e BDIR=/workspace/$BDIR \
-    ${DOCKER_HOST_VAR:+-e DOCKER_HOST=$DOCKER_HOST_VAR} \
-    ${CONTAINERD_ADDRESS_VAR:+-e CONTAINERD_ADDRESS=$CONTAINERD_ADDRESS_VAR} \
-    ${GIT_SSH_COMMAND:+-e GIT_SSH_COMMAND=$GIT_SSH_COMMAND} \
+    ${DOCKER_HOST:+-e DOCKER_HOST} \
+    ${CONTAINERD_ADDRESS:+-e CONTAINERD_ADDRESS} \
+    ${GIT_SSH_COMMAND:+-e GIT_SSH_COMMAND} \
     -e LLAMA_SERVER_URL \
     -e LLAMA_MODEL \
     --ulimit memlock=-1:-1 \
