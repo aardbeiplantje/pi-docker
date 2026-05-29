@@ -1,4 +1,4 @@
-FROM node:26-trixie-slim AS runtime
+FROM node:26-trixie-slim AS base
 
 LABEL author="aardbeiplantje@gmail.com"
 LABEL description="Docker image for opencode - AI-powered CLI tool with secure non-root execution environment"
@@ -85,3 +85,14 @@ ENV T_UID=1000
 ENV EDITOR=nano
 ENV VISUAL=nano
 ENTRYPOINT ["/usr/bin/perl", "/opencode.pl"]
+
+FROM base AS runtime
+USER root
+RUN  \
+    apt-get update && apt-get install -y --no-install-recommends \
+        socat \
+        strace \
+        ltrace \
+        openssl \
+        openssh-client \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
