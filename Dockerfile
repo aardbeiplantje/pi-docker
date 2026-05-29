@@ -31,7 +31,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
    curl \
   lsof \
   strace \
-  openssl \
+   tshark \
+   tcpdump \
+   openssl \
   bash \
   openssh-client \
    && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -93,8 +95,10 @@ USER root
 RUN  \
     apt-get update && apt-get install -y --no-install-recommends \
         socat \
-        strace \
-        ltrace \
-        openssl \
+         strace \
+         tshark \
+         tcpdump \
+         ltrace \
+         openssl \
         openssh-client \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
