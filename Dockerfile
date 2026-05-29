@@ -49,7 +49,6 @@ RUN npm install -g npm
 RUN npm install -g bun
 RUN npm install -g @ai-sdk/openai-compatible
 RUN npm install -g opencode-ai
-WORKDIR /workspace
 RUN opencode run "dummy"
 
 USER root
@@ -77,9 +76,9 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /
 RUN rm -rf /tmp/* /tmp/.*.so
 COPY opencode.pl /
 COPY config.json /home/node/config.json
+COPY skills /skills/
 
 USER root
-WORKDIR /workspace
 ENV PATH=/home/node/.opencode/bin:/home/node/.local/bin:$PATH
 ENV OPENCODE_CONFIG=/home/node/config.json
 ENV OPENCODE_CONFIG_DIR=/workspace

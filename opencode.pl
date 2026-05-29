@@ -96,6 +96,21 @@ if($< == 0){
 die "Error: Running as root is not allowed"
     if $< == 0;
 
+# setup /workspace/.opencode
+my $opencode_cfg = "/workspace/.opencode";
+if(!-d $opencode_cfg){
+    mkdir($opencode_cfg, 0777)
+        or die "Failed to create directory $opencode_cfg: $!";
+}
+my $skills_dir = "$opencode_cfg/skills";
+if(!-d $skills_dir){
+    mkdir($skills_dir, 0777)
+        or die "Failed to create directory $skills_dir: $!";
+}
+if(-d '/skills'){
+    system("cp -a /skills/ $opencode_cfg/skills/");
+}
+
 # make /workspace/.bash_history
 my $history_path = "/workspace/.bash_history";
 if(!-f $history_path){
@@ -111,7 +126,7 @@ $ENV{HISTFILE} = $history_path;
 # Set HOME environment variable for node user
 $ENV{HOME} = "/workspace";
 $ENV{LOGNAME} = "node";
-$ENV{OPENCODE_AUTO_SHARE} = "/workspace/.opencode";
+$ENV{OPENCODE_AUTO_SHARE} = $opencode_cfg;
 
 # Execute the actual opencode CLI with all provided arguments
 exec("/home/node/.npm-global/bin/opencode", @ARGV)
