@@ -56,7 +56,9 @@ fi
 
 HERE=$(readlink -f "${PWD}")
 BDIR=${HERE##*/}
-docker pull -q $DOCKER_IMAGE || { echo "problem fetching $DOCKER_IMAGE"; exit $?; }
+docker pull -q $DOCKER_IMAGE >/dev/null 2>&1 || { echo "problem fetching $DOCKER_IMAGE"; exit $?; }
+ROCM_PATH=${ROCM_PATH:-~/therock-dist-linux-gfx1151-latest}
+ROCM_PATH=$(readlink -f "$ROCM_PATH")
 exec docker run --rm -it \
     $extra_opts \
     $DOCKER_RUN_OPTS \
@@ -79,6 +81,8 @@ exec docker run --rm -it \
     -e GIT_COMITTER_NAME \
     -e GIT_COMITTER_EMAIL \
     -e GIT_EDITOR="true" \
+    -e ROCM_PATH=/opt/rocm \
+    -v $ROCM_PATH:/opt/rocm:ro \
     --ulimit memlock=-1:-1 \
     --ulimit stack=67108864:67108864 \
     --group-add=video \

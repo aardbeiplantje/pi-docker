@@ -6,36 +6,36 @@ LABEL version="0.1.0"
 
 # Install basic development tools and iptables/ipset
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  less \
-  git \
-  ripgrep \
-  procps \
-  sudo \
-  fzf \
+   less \
+   git \
+   ripgrep \
+   procps \
+   sudo \
+   fzf \
    file \
    zsh \
-  man-db \
-  unzip \
-  gnupg2 \
-  gh \
-  iptables \
-  ipset \
-  iproute2 \
-  dnsutils \
-  aggregate \
-  jq \
-  nano \
-  vim \
+   man-db \
+   unzip \
+   gnupg2 \
+   gh \
+   iptables \
+   ipset \
+   iproute2 \
+   dnsutils \
+   aggregate \
+   jq \
+   nano \
+   vim \
    socat \
    ca-certificates \
    curl \
-  lsof \
-  strace \
+   lsof \
+   strace \
    tshark \
    tcpdump \
    openssl \
-  bash \
-  openssh-client \
+   bash \
+   openssh-client \
    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://downloads.arduino.cc/arduino-cli/arduino-cli_1.5.0-1_amd64.deb -o /tmp/arduino-cli.deb && dpkg -i /tmp/arduino-cli.deb && rm /tmp/arduino-cli.deb
@@ -69,7 +69,17 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /
       python3-pip \
       python3-pip-whl \
       python3-venv \
+      python3-dev \
+      python3-minimal \
       python3-requests \
+      python3-scapy \
+      socat \
+      strace \
+      tshark \
+      tcpdump \
+      ltrace \
+      openssl \
+      openssh-client \
       docker-ce \
       docker-ce-cli \
       docker-ce-rootless-extras \
@@ -92,13 +102,3 @@ ENTRYPOINT ["/usr/bin/perl", "/opencode.pl"]
 
 FROM base AS runtime
 USER root
-RUN  \
-    apt-get update && apt-get install -y --no-install-recommends \
-        socat \
-         strace \
-         tshark \
-         tcpdump \
-         ltrace \
-         openssl \
-        openssh-client \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
