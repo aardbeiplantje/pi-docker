@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   procps \
   sudo \
   fzf \
-  zsh \
+   file \
+   zsh \
   man-db \
   unzip \
   gnupg2 \
