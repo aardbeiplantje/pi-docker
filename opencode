@@ -74,6 +74,11 @@ exec docker run --rm -it \
     ${GIT_SSH_COMMAND:+-e GIT_SSH_COMMAND} \
     -e LLAMA_SERVER_URL \
     -e LLAMA_MODEL \
+    -e GIT_AUTHOR_NAME \
+    -e GIT_AUTHOR_EMAIL \
+    -e GIT_COMITTER_NAME \
+    -e GIT_COMITTER_EMAIL \
+    -e GIT_EDITOR="true" \
     --ulimit memlock=-1:-1 \
     --ulimit stack=67108864:67108864 \
     --group-add=video \
