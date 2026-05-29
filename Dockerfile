@@ -33,7 +33,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   openssl \
   bash \
   openssh-client \
-  && apt-get clean && rm -rf /var/lib/apt/lists/*
+   && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://downloads.arduino.cc/arduino-cli/arduino-cli_1.5.0-1_amd64.deb -o /tmp/arduino-cli.deb && dpkg -i /tmp/arduino-cli.deb && rm /tmp/arduino-cli.deb
 
 # Set up non-root user
 USER node
