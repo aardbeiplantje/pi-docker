@@ -87,6 +87,9 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /
       docker-buildx-plugin \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN rm -rf /tmp/* /tmp/.*.so
+RUN mkdir -p /workspace
+RUN mkdir -p /workdir
+RUN mkdir -p /opt/rocm
 COPY opencode.pl /
 COPY config.json /home/node/config.json
 COPY skills /skills/

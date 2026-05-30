@@ -82,6 +82,12 @@ umask 0022;
 die "Error setting umask 0022: $!"
     if $!;
 
+# if containerd sock, group change it
+if(-S "/tmp/containerd.sock"){
+    chown(1000, 1000, "/tmp/containerd.sock")
+        or die "Error changing ownership of /tmp/containerd.sock to 1000: $!";
+}
+
 # make /workspace/.bash_history
 my $history_path = "/workspace/.bash_history";
 if(!-f $history_path){
@@ -152,8 +158,13 @@ $ENV{LOGNAME} = "node";
 $ENV{PATH} = "$ENV{PATH}:$ENV{ROCM_PATH}/bin" if length($ENV{ROCM_PATH}//"");
 
 # $ENV{BDIR} was mounted on /workdir/$BDIR
-chdir("/workdir/$ENV{BDIR}")
-    or die "Error chdir to /workdir/$ENV{BDIR}: $!\n";
+if($ENV{BDIR}){
+    chdir("/workdir/$ENV{BDIR}")
+        or die "Error chdir to /workdir/$ENV{BDIR}: $!\n";
+} else {
+    chdir("/workdir")
+        or die "Error chdir to /workdir/: $!\n";
+}
 
 # Execute the actual opencode CLI with all provided arguments
 exec("/home/node/.npm-global/bin/opencode", @ARGV)

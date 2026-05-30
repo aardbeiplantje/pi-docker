@@ -24,17 +24,15 @@ fi
 
 # Share Docker socket if available and set DOCKER_HOST
 if [ -S /var/run/docker.sock ]; then
-    extra_opts="-v /var/run/docker.sock:/var/run/docker.sock $extra_opts"
-    DOCKER_HOST=unix:///var/run/docker.sock
+    extra_opts="-v /var/run/docker.sock:/tmp/docker.sock $extra_opts"
+    d_host=unix:///tmp/docker.sock
 fi
-export DOCKER_HOST
 
 # Share containerd socket and config
 if [ -S /run/containerd/containerd.sock ]; then
-    extra_opts="-v /run/containerd/containerd.sock:/run/containerd/containerd.sock $extra_opts"
-    CONTAINERD_ADDRESS=/run/containerd/containerd.sock
+    extra_opts="-v /run/containerd/containerd.sock:/tmp/containerd.sock $extra_opts"
+    c_address=/tmp/containerd.sock
 fi
-export CONTAINERD_ADDRESS
 if [ -d /etc/containerd ]; then
     extra_opts="-v /etc/containerd:/etc/containerd:ro $extra_opts"
 fi
@@ -70,8 +68,8 @@ exec docker run --rm -it \
     -e NODE_OPTIONS="--max-old-space-size=4096" \
     -e UID=${EUID} \
     -e BDIR="${BDIR}" \
-    ${DOCKER_HOST:+-e DOCKER_HOST} \
-    ${CONTAINERD_ADDRESS:+-e CONTAINERD_ADDRESS} \
+    ${d_host:+-e DOCKER_HOST=$d_host} \
+    ${c_address:+-e CONTAINERD_ADDRESS=$c_address} \
     ${GIT_SSH_COMMAND:+-e GIT_SSH_COMMAND} \
     -e LLAMA_SERVER_URL \
     -e LLAMA_MODEL \
@@ -81,6 +79,9 @@ exec docker run --rm -it \
     -e GIT_COMITTER_EMAIL \
     -e GIT_EDITOR="true" \
     -e ROCM_PATH=/opt/rocm \
+    -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true \
+    -e DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
     -v $ROCM_PATH:/opt/rocm:ro \
     --ulimit memlock=-1:-1 \
     --ulimit stack=67108864:67108864 \
