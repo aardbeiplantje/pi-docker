@@ -65,7 +65,7 @@ exec docker run --rm -it \
     -e ALL_PROXX \
     -e HTTP_PROXY \
     -e HTTPS_PROX \
-    -e TMPDIR=/workspace/$BDIR/.tmp \
+    -e TMPDIR=/tmp \
     -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
     -e NODE_OPTIONS="--max-old-space-size=4096" \
     -e UID=${EUID} \
@@ -91,9 +91,11 @@ exec docker run --rm -it \
     --group-add 986 \
     --group-add 109 \
     --group-add 992 \
-    --device /dev/kfd \
-    --device /dev/dri \
-    --network=host \
+  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=2G \
+   --tmpfs /var/tmp:rw,noexec,nosuid,nodev,size=1G \
+   --device /dev/kfd \
+   --device /dev/dri \
+   --network=host \
     $extra_cmd \
     --name opencode-${LOGNAME}-${BDIR} \
     -v opencode-${LOGNAME}:/workspace \

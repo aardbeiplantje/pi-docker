@@ -87,22 +87,6 @@ if (-d $ENV{BDIR}) {
         or die "Failed to change directory to $ENV{BDIR}: $!";
 }
 
-# setup /workspace/tmp, the symlink from /tmp to /workspace/tmp is already there
-mkdir("/workspace");
-my $tmp_path = "/workspace/tmp";
-if(!-d $tmp_path){
-    mkdir($tmp_path, 0777)
-        or die "Failed to create directory $tmp_path: $!";
-    chown(1000, 1000, $tmp_path)
-        or die "Error changing ownership of $tmp_path to 1000: $!";
-    chmod(01777, $tmp_path)
-        or die "Error setting permissions of $tmp_path to 1777: $!";
-}
-rmdir("/tmp")
-    or die "Failed to remove existing /tmp directory: $!";
-symlink($tmp_path, "/tmp")
-    or die "Failed to create symlink from $tmp_path to /tmp: $!";
-
 # make /workspace/.bash_history
 my $history_path = "/workspace/.bash_history";
 if(!-f $history_path){
