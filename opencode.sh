@@ -91,11 +91,11 @@ exec docker run --rm -it \
     --group-add 986 \
     --group-add 109 \
     --group-add 992 \
-  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=2G \
-   --tmpfs /var/tmp:rw,noexec,nosuid,nodev,size=1G \
-   --device /dev/kfd \
-   --device /dev/dri \
-   --network=host \
+    --tmpfs /tmp:rw,suid,exec,size=2G \
+    --tmpfs /var/tmp:rw,suid,exec,size=1G \
+    --device /dev/kfd \
+    --device /dev/dri \
+    --network=host \
     $extra_cmd \
     --name opencode-${LOGNAME}-${BDIR} \
     -v opencode-${LOGNAME}:/workspace \
