@@ -54,6 +54,10 @@ if [ -d ~/.docker ]; then
     extra_opts="-v $HOME/.docker:/workspace/.docker $extra_opts"
 fi
 
+if [ "${DIND:-0}" = "1" ]; then
+    extra_opts="$extra_opts -e DIND --privileged=true"
+fi
+
 ROCM_PATH=${ROCM_PATH:-~/therock-dist-linux-gfx1151-latest}
 ROCM_PATH=$(readlink -f "$ROCM_PATH")
 exec docker run --rm -it \
@@ -82,10 +86,8 @@ exec docker run --rm -it \
     -e ROCM_PATH=/opt/rocm \
     -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true \
     -e DISPLAY \
-    -e DIND \
     -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
     -v $ROCM_PATH:/opt/rocm:ro \
-    --privileged=true \
     --ulimit memlock=-1:-1 \
     --ulimit stack=67108864:67108864 \
     --group-add=video \
