@@ -1,16 +1,17 @@
 #!/bin/bash
 
-export LLAMA_SERVER_URL=${LLAMA_SERVER_URL:-http://[::]:4000/v1}
-export LLAMA_MODEL=${LLAMA_MODEL:-opencode.code}
-export DOCKER_IMAGE=${DOCKER_IMAGE:-opencode:latest}
+DOCKER_IMAGE=${DOCKER_IMAGE:-opencode:latest}
+HERE=$(readlink -f "${PWD}")
+BDIR=${HERE##*/}
 
 extra_cmd=
 if [ ! -z "${OPENCODE_CONFIG}" -a -f "${OPENCODE_CONFIG}" ]; then
     extra_cmd="-v ${OPENCODE_CONFIG}:${OPENCODE_CONFIG}:ro -e OPENCODE_CONFIG"
 fi
 export OPENCODE_CONFIG
-
 export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
+export LLAMA_SERVER_URL=${LLAMA_SERVER_URL:-http://[::]:4000/v1}
+export LLAMA_MODEL=${LLAMA_MODEL:-opencode.code}
 
 extra_opts=
 
@@ -23,9 +24,26 @@ if [ ! -z "$SSH_AUTH_SOCK" ]; then
 fi
 
 # Share Docker socket if available and set DOCKER_HOST
-if [ -S /var/run/docker.sock ]; then
-    extra_opts="-v /var/run/docker.sock:/tmp/docker.sock $extra_opts"
+if [ ! -z "$DOCKER_HOST" -a -S "$DOCKER_HOST" ]; then
+    extra_opts="-v $DOCKER_HOST:/tmp/docker.sock $extra_opts"
     d_host=unix:///tmp/docker.sock
+else
+    s_v=opencode-dind-$LOGNAME-$BDIR-dind-sock
+    d_v=opencode-dind-$LOGNAME-$BDIR-dind-data
+    docker run \
+        --rm \
+        -d \
+        --name opencode-dind-$LOGNAME-$BDIR \
+        --privileged=true \
+        -v $s_v:/dind:rw \
+        -v $d_v:/var/lib/docker:rw \
+        docker:dind \
+          dockerd \
+            -G 1000 \
+            -D \
+            --host=unix:///dind/docker.sock
+    extra_opts="-v $s_v:/tmp/dind:rw"
+    d_host=unix:///tmp/dind/docker.sock
 fi
 
 # Share containerd socket and config
@@ -40,20 +58,18 @@ fi
 # Share git info
 if [ -f ~/.gitconfig ]; then
     fn=$(readlink -f ~/.gitconfig)
-    extra_opts="-v $fn:/home/node/.gitconfig:ro $extra_opts"
+    extra_opts="-v $fn:/workspace/.gitconfig:ro $extra_opts"
 fi
 if [ -f ~/.gitexcludes ]; then
     fn=$(readlink -f ~/.gitexcludes)
-    extra_opts="$extra_opts -v $fn:/home/node/.gitexcludes:ro $extra_opts"
+    extra_opts="$extra_opts -v $fn:/workspace/.gitexcludes:ro $extra_opts"
 fi
 
 # Share Docker config for registry authentication and buildx state
 if [ -d ~/.docker ]; then
-    extra_opts="-v $HOME/.docker:/home/node/.docker $extra_opts"
+    extra_opts="-v $HOME/.docker:/workspace/.docker $extra_opts"
 fi
 
-HERE=$(readlink -f "${PWD}")
-BDIR=${HERE##*/}
 ROCM_PATH=${ROCM_PATH:-~/therock-dist-linux-gfx1151-latest}
 ROCM_PATH=$(readlink -f "$ROCM_PATH")
 exec docker run --rm -it \
