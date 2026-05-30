@@ -6,12 +6,8 @@ BDIR=${HERE##*/}
 
 extra_cmd=
 if [ ! -z "${OPENCODE_CONFIG}" -a -f "${OPENCODE_CONFIG}" ]; then
-    extra_cmd="-v ${OPENCODE_CONFIG}:${OPENCODE_CONFIG}:ro -e OPENCODE_CONFIG"
+    extra_cmd="-v ${OPENCODE_CONFIG}:${OPENCODE_CONFIG}:ro -e OPENCODE_CONFIG=$OPENCODE_CONFIG"
 fi
-export OPENCODE_CONFIG
-export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
-export LLAMA_SERVER_URL=${LLAMA_SERVER_URL:-http://[::]:4000/v1}
-export LLAMA_MODEL=${LLAMA_MODEL:-opencode.code}
 
 extra_opts=
 
@@ -91,9 +87,9 @@ exec docker run --rm -it \
     -e BDIR="${BDIR}" \
     ${d_host:+-e DOCKER_HOST=$d_host} \
     ${c_address:+-e CONTAINERD_ADDRESS=$c_address} \
-    ${GIT_SSH_COMMAND:+-e GIT_SSH_COMMAND} \
-    -e LLAMA_SERVER_URL \
-    -e LLAMA_MODEL \
+    -e GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" \
+    -e LLAMA_SERVER_URL=${LLAMA_SERVER_URL:-http://[::]:4000/v1} \
+    -e LLAMA_MODEL=${LLAMA_MODEL:-opencode.code} \
     -e GIT_AUTHOR_NAME \
     -e GIT_AUTHOR_EMAIL \
     -e GIT_COMITTER_NAME \
