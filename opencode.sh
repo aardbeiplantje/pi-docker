@@ -28,30 +28,6 @@ if [ ! -z "$DOCKER_HOST" ]; then
     else
         d_host=$DOCKER_HOST
     fi
-else
-    if [ 1 = 0 ]; then
-    s_v=opencode-dind-$LOGNAME-$BDIR-dind-sock
-    d_v=opencode-dind-$LOGNAME-$BDIR-dind-data
-    n_v=opencode-dind-$LOGNAME-$BDIR
-    ok=$(docker ps --format json -f name="$n_v"|jq -r .State)
-    if [ "$ok" != "running" ]; then
-        docker stop "$n_v" >/dev/null 2>&1 || true
-        docker run \
-            --rm \
-            -d \
-            --name "$n_v" \
-            --privileged=true \
-            -v $s_v:/dind:rw \
-            -v $d_v:/var/lib/docker:rw \
-            docker:dind \
-              dockerd \
-                -G 1000 \
-                -D \
-                --host=unix:///dind/docker.sock
-    fi
-    extra_opts="-v $s_v:/tmp/dind:rw $extra_opts"
-    d_host=unix:///tmp/dind/docker.sock
-    fi
 fi
 
 # Share containerd socket and config
