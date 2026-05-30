@@ -6,7 +6,7 @@ use strict; use warnings;
 # matter alot, as we'll exec another process over it at the end
 {
     my $bd = $ENV{BDIR}    // "session";
-    $bd =~ s/.*\///;
+    $bd =~ s/^.*\///g;
     $bd =~ s/[^a-zA-Z0-9_-]/_/g;
     my $ln = $ENV{LOGNAME} // "node";
     $ln =~ s/[^a-zA-Z0-9_-]/_/g;
@@ -82,11 +82,6 @@ umask 0022;
 die "Error setting umask 0022: $!"
     if $!;
 
-if (-d $ENV{BDIR}) {
-    chdir($ENV{BDIR})
-        or die "Failed to change directory to $ENV{BDIR}: $!";
-}
-
 # make /workspace/.bash_history
 my $history_path = "/workspace/.bash_history";
 if(!-f $history_path){
@@ -115,8 +110,6 @@ if (-d $skills_src) {
     make_path($skills_dir) unless -d $skills_dir;
     copy_tree($skills_src, $skills_dir);
 }
-
-$ENV{XDG_CACHE_HOME} = "/workspace/.cache";
 
 # If running as root and UID environment variable is set, use that UID
 if($< == 0 and length($ENV{UID}//"")){
@@ -149,15 +142,18 @@ if($< == 0){
 die "Error: Running as root is not allowed"
     if $< == 0;
 
+$ENV{XDG_CACHE_HOME} = "/workspace/.cache";
 $ENV{PROMPT_COMMAND} = 'history -a';
 $ENV{HISTFILE} = $history_path;
 
 # Set HOME environment variable for node user
-my $opencode_cfg = $ENV{OPENCODE_CFG} // "";
 $ENV{HOME} = "/workspace";
 $ENV{LOGNAME} = "node";
-$ENV{OPENCODE_AUTO_SHARE} = $opencode_cfg;
 $ENV{PATH} = "$ENV{PATH}:$ENV{ROCM_PATH}/bin" if length($ENV{ROCM_PATH}//"");
+
+# $ENV{BDIR} was mounted on /workdir/$BDIR
+chdir("/workdir/$ENV{BDIR}")
+    or die "Error chdir to /workdir/$ENV{BDIR}: $!\n";
 
 # Execute the actual opencode CLI with all provided arguments
 exec("/home/node/.npm-global/bin/opencode", @ARGV)

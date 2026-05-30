@@ -69,7 +69,7 @@ exec docker run --rm -it \
     -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
     -e NODE_OPTIONS="--max-old-space-size=4096" \
     -e UID=${EUID} \
-    -e BDIR=/workspace/$BDIR \
+    -e BDIR="${BDIR}" \
     ${DOCKER_HOST:+-e DOCKER_HOST} \
     ${CONTAINERD_ADDRESS:+-e CONTAINERD_ADDRESS} \
     ${GIT_SSH_COMMAND:+-e GIT_SSH_COMMAND} \
@@ -99,6 +99,6 @@ exec docker run --rm -it \
     $extra_cmd \
     --name opencode-${LOGNAME}-${BDIR} \
     -v opencode-${LOGNAME}:/workspace \
-    -v "${PWD}":/workspace/$BDIR \
+    -v "${PWD}":/workdir/${BDIR} \
         "$DOCKER_IMAGE" \
             $*
