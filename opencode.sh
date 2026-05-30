@@ -19,8 +19,8 @@ extra_opts=
 if [ ! -z "$SSH_AUTH_SOCK" ]; then
     b_sock=$(readlink -f "$SSH_AUTH_SOCK")
     b_dir=${b_sock##*/}
-    export C_SSH_AUTH_SOCK=/dev/shm/$b_dir
-    extra_opts="-v $SSH_AUTH_SOCK:/dev/shm/$b_dir -e SSH_AUTH_SOCK=$C_SSH_AUTH_SOCK $extra_opts"
+    c_ssh_auth_sock=/dev/shm/$b_dir
+    extra_opts="-v $SSH_AUTH_SOCK:/dev/shm/$b_dir -e SSH_AUTH_SOCK=$c_ssh_auth_sock $extra_opts"
 fi
 
 # Share Docker socket if available and set DOCKER_HOST
@@ -47,7 +47,7 @@ else
                 -D \
                 --host=unix:///dind/docker.sock
     fi
-    extra_opts="-v $s_v:/tmp/dind:rw"
+    extra_opts="-v $s_v:/tmp/dind:rw $extra_opts"
     d_host=unix:///tmp/dind/docker.sock
 fi
 
