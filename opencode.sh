@@ -56,7 +56,6 @@ fi
 
 HERE=$(readlink -f "${PWD}")
 BDIR=${HERE##*/}
-docker pull -q $DOCKER_IMAGE >/dev/null 2>&1 || { echo "problem fetching $DOCKER_IMAGE"; exit $?; }
 ROCM_PATH=${ROCM_PATH:-~/therock-dist-linux-gfx1151-latest}
 ROCM_PATH=$(readlink -f "$ROCM_PATH")
 exec docker run --rm -it \

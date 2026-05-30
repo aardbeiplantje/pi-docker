@@ -4,6 +4,9 @@ group "default" {
 group "release" {
   targets = ["containers"]
 }
+group "local" {
+  targets = ["_local"]
+}
 variable "DOCKER_REGISTRY" {
   default = "ghcr.io"
 }
@@ -19,7 +22,31 @@ variable "DOCKER_TAG" {
 variable "CACHEBUST" {
   default = "1"
 }
+
+target "_common" {
+  context = "."
+  dockerfile = "Dockerfile"
+  platforms = ["linux/amd64"]
+  args = {
+    CACHEBUST = "${CACHEBUST}"
+  }
+  networks = ["host"]
+  buildkit = true
+}
+
+target "_local" {
+  inherits = ["_common"]
+  target = "runtime"
+  tags = [
+    "${DOCKER_IMAGE_NAME}:latest",
+  ]
+  output = [
+    "type=docker,name=${DOCKER_IMAGE_NAME}:${DOCKER_TAG}"
+  ]
+}
+
 target "containers" {
+  inherits = ["_common"]
   pull = true
   name = "containers-${env}"
   matrix = {
@@ -45,13 +72,4 @@ target "containers" {
     "type=provenance,mode=max",
     "type=sbom",
   ]
-  context = "."
-  dockerfile = "Dockerfile"
-  networks = ["host"]
-  platforms = [
-    "linux/amd64"
-  ]
-  args = {
-    CACHEBUST = "${CACHEBUST}"
-  }
 }
