@@ -1,9 +1,66 @@
 #!/usr/bin/perl
 
-use File::Path qw(make_path);
+use strict; use warnings;
 
-# Set process name to 'opencode' for cleaner process listings
-$0 = 'opencode';
+# scope this, the $bd and $ln will be garbage collected, but $0 set. Doesn't
+# matter alot, as we'll exec another process over it at the end
+{
+    my $bd = $ENV{BDIR}    // "session";
+    $bd =~ s/.*\///;
+    $bd =~ s/[^a-zA-Z0-9_-]/_/g;
+    my $ln = $ENV{LOGNAME} // "node";
+    $ln =~ s/[^a-zA-Z0-9_-]/_/g;
+    $0 = "opencode:$ln:$bd";
+}
+
+use File::Path qw(make_path);
+use File::Find;
+use File::stat;
+
+
+sub copy_file {
+    my ($src, $dst) = @_;
+    if (open(my $in, "<", $src) and open(my $out, ">", $dst)) {
+        local $/; my $data = <$in>; print $out $data; close($in); close($out);
+        return 1;
+    }
+    0;
+}
+
+sub set_mtime {
+    my ($file, $mtime) = @_;
+    utime($mtime, $mtime, $file);
+}
+
+sub copy_tree {
+    my ($src, $dst_dir) = @_;
+    find({
+        no_chdir => 1,
+        follow_skip => 2,
+        wanted => sub {
+            my $rel; { local $File::Find::name = $_; ($rel = $_) =~ s{^\Q${src}/?\E}{}o; }
+            my $dest = "$dst_dir/$rel";
+
+            if (-l $_) {
+                unlink($dest) if -e $dest;
+                symlink(readlink($_), $dest);
+            } elsif (-d $_) {
+                make_path($dest) unless -d $dest;
+                my $st = lstat($_);
+                chmod($st->mode, $dest) if defined($st);
+                set_mtime($dest, $st->mtime) if defined($st);
+                chown(1000, 1000, $dest) if -e $dest;
+            } elsif (-f $_) {
+                copy_file($_, $dest);
+                my $st = stat($_);
+                chmod($st->mode & 07777, $dest) if defined($st);
+                set_mtime($dest, $st->mtime) if defined($st);
+                chown(1000, 1000, $dest) if -e $dest;
+            }
+        },
+    }, $src);
+}
+
 
 # Clear error flag before privilege operations
 $! = 0;
@@ -67,10 +124,12 @@ for my $d ('.opencode', '.local', '.config', '.cache'){
         or die "Error changing ownership of $sd to 1000: $!";
 }
 
-# copy skills
-my $skills_dir = "/workspace/.opencode";
-if(-d '/skills'){
-    system("cp -a /skills $skills_dir/");
+# copy skills (overwrite existing files)
+my $skills_src = "/skills";
+my $skills_dir = "/workspace/.opencode/skills";
+if (-d $skills_src) {
+    make_path($skills_dir) unless -d $skills_dir;
+    copy_tree($skills_src, $skills_dir);
 }
 
 $ENV{XDG_CACHE_HOME} = "/workspace/.cache";
@@ -110,6 +169,7 @@ $ENV{PROMPT_COMMAND} = 'history -a';
 $ENV{HISTFILE} = $history_path;
 
 # Set HOME environment variable for node user
+my $opencode_cfg = $ENV{OPENCODE_CFG} // "";
 $ENV{HOME} = "/workspace";
 $ENV{LOGNAME} = "node";
 $ENV{OPENCODE_AUTO_SHARE} = $opencode_cfg;
