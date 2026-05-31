@@ -1,5 +1,5 @@
 group "default" {
-  targets = ["release"]
+  targets = ["local"]
 }
 group "release" {
   targets = ["containers"]
@@ -38,10 +38,10 @@ target "_local" {
   inherits = ["_common"]
   target = "runtime"
   tags = [
-    "${DOCKER_IMAGE_NAME}:latest",
+    "local/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG}",
   ]
   output = [
-    "type=docker,name=${DOCKER_IMAGE_NAME}:${DOCKER_TAG}"
+    "type=docker,name=local/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG}"
   ]
 }
 
