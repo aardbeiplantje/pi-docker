@@ -55,6 +55,13 @@ The config lives at `/home/node/config.json` inside the image. Edit rules:
   `refactor:`, `chore:`, `docs:`
 - Dockerfile installs grouped logically within a single `apt-get` to minimize layers
 
+## Cache Busting Mechanism
+
+To force a rebuild of specific layers during Docker image builds (particularly useful when testing changes to apt packages or other cached steps), the project now supports:
+
+1. A **Dockerfile ARG `CACHEBUST`** with default value "1"
+2. Setting this variable higher in docker-bake.hcl triggers cache invalidation
+
 ## Helpful Commands / Docs
 
 See `README.md` for build, config, and DIND documentation.
