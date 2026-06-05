@@ -43,6 +43,7 @@ RUN curl -fsSL https://downloads.arduino.cc/arduino-cli/arduino-cli_1.5.0-1_amd6
 # Set up non-root user
 USER node
 
+ARG CACHEBUST=1
 ENV NPM_CONFIG_PREFIX=/home/node/.npm-global
 ENV PATH=$PATH:/home/node/.npm-global/bin
 ENV PATH=/home/node/.opencode/bin:/home/node/.local/bin:$PATH

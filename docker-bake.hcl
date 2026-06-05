@@ -22,7 +22,6 @@ variable "DOCKER_TAG" {
 variable "CACHEBUST" {
   default = "1"
 }
-
 target "_common" {
   context = "."
   dockerfile = "Dockerfile"
@@ -33,7 +32,6 @@ target "_common" {
   networks = ["host"]
   buildkit = true
 }
-
 target "_local" {
   inherits = ["_common"]
   target = "runtime"
@@ -44,7 +42,6 @@ target "_local" {
     "type=docker,name=local/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG}"
   ]
 }
-
 target "containers" {
   inherits = ["_common"]
   pull = true
