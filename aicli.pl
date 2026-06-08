@@ -240,12 +240,13 @@ if($ENV{BDIR}){
 }
 
 # If first argument is 'pi', run pi-coding-agent instead
-if (@ARGV && $ARGV[0] eq "pi") {
+if (@ARGV && $ARGV[0] eq "-pi") {
     # Remove the 'pi' command from arguments and pass rest to pi binary
     shift @ARGV;
     exec("/home/node/.npm-global/bin/pi", @ARGV)
         or die "[ERROR] failed to exec pi: $!\n";
 }
 # Otherwise, run opencode CLI with all provided arguments
+@ARGV && $ARGV[0] eq "-opencode" && shift @ARGV;
 exec("/home/node/.npm-global/bin/opencode", @ARGV)
     or die "[ERROR] failed to exec: $!\n";

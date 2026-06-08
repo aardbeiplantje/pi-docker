@@ -6,6 +6,10 @@ BDIR=${HERE##*/}
 
 extra_opts=
 
+w=${1:--opencode}
+shift
+echo "running $w"
+
 # opencode config specified?
 if [ ! -z "${OPENCODE_CONFIG}" -a -f "${OPENCODE_CONFIG}" ]; then
     extra_opts="-v ${OPENCODE_CONFIG}:${OPENCODE_CONFIG}:ro -e OPENCODE_CONFIG=$OPENCODE_CONFIG"
@@ -77,7 +81,7 @@ exec docker run --rm -it \
     ${c_address:+-e CONTAINERD_ADDRESS=$c_address} \
     -e GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" \
     -e LLAMA_SERVER_URL=${LLAMA_SERVER_URL:-http://[::]:4000/v1} \
-    -e LLAMA_MODEL=${LLAMA_MODEL:-opencode.code} \
+    -e LLAMA_MODEL=${LLAMA_MODEL:-qwen3.5:0.8b} \
     -e GIT_AUTHOR_NAME \
     -e GIT_AUTHOR_EMAIL \
     -e GIT_COMITTER_NAME \
@@ -102,8 +106,8 @@ exec docker run --rm -it \
     --device /dev/kfd \
     --device /dev/dri \
     --network=host \
-    --name opencode-${LOGNAME}-${BDIR} \
-    -v opencode-${LOGNAME}:/workspace \
+    --name ${w##-}-${LOGNAME}-${BDIR} \
+    -v ${w##-}-${LOGNAME}:/workspace \
     -v "${PWD}":/workdir/${BDIR} \
         "$DOCKER_IMAGE" \
-            $*
+            $w $*
