@@ -54,6 +54,8 @@ RUN npm install -g bun
 RUN npm install -g @ai-sdk/openai-compatible
 RUN npm install -g opencode-ai
 RUN npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+RUN npm install -g --ignore-scripts fd
+RUN pi install npm:pi-llama-cpp
 RUN opencode run "dummy"
 
 USER root

@@ -101,7 +101,7 @@ if(length($ENV{ROCM_PATH}//"")){
 }
 
 # setup /workspace/.opencode
-foreach my $d ('.opencode', '.local', '.config', '.cache'){
+foreach my $d ('.opencode', '.local', '.config', '.cache', '.pi'){
     my $sd = "$workspace/$d";
     if(!-d $sd){
         mkdir($sd)
