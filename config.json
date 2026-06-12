@@ -5,6 +5,7 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "llama-server (local)",
       "options": {
+        "apiKey": "{env:LLAMA_SERVER_API_KEY}",
         "baseURL": "{env:LLAMA_SERVER_URL}"
       },
       "models": {
