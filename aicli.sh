@@ -26,9 +26,11 @@ fi
 # Share Docker socket if available and set DOCKER_HOST
 if [ ! -z "$DOCKER_HOST" ]; then
     d_sock=${DOCKER_HOST##unix://}
+    echo "check $d_sock"
     if [ -S "$d_sock" ]; then
-        extra_opts="-v $d_sock:/tmp/docker.sock $extra_opts"
-        d_host=unix:///tmp/docker.sock
+        extra_opts="-v $d_sock:/var/run/docker.sock $extra_opts"
+        d_host=unix:///var/run/docker.sock
+        echo "using DOCKER_HOST=$d_host"
     else
         d_host=$DOCKER_HOST
     fi

@@ -133,7 +133,7 @@ if(($ENV{DIND}//0) == 1 and !length($ENV{DOCKER_HOST}//"")){
     my $c_pid = fork();
     if($c_pid){
         # original process here
-        $ENV{DOCKER_HOST} = "unix:///tmp/docker.sock";
+        $ENV{DOCKER_HOST} = "unix:///var/run/docker.sock";
     } elsif(!defined $c_pid){
         die "[ERROR] couldn't fork for daemonizing dockerd: $!\n";
     } else {
@@ -167,7 +167,7 @@ if(($ENV{DIND}//0) == 1 and !length($ENV{DOCKER_HOST}//"")){
                     "--raw-logs",
                     "--log-level", "error",
                     "--log-format", "text",
-                    "--host=unix:///tmp/docker.sock",
+                    "--host=unix:///var/run/docker.sock",
                     "-G", "1000",
                     "-D",
                     "--data-root", "$workspace/docker";
