@@ -96,12 +96,14 @@ RUN mkdir -p /workdir
 RUN mkdir -p /opt/rocm
 COPY aicli.pl /
 COPY config.json /home/node/config.json
+COPY pi.dev.jsonc /workspace/.pi/pi.dev.jsonc
 COPY skills /skills/
 
 USER root
 ENV PATH=/home/node/.opencode/bin:/home/node/.local/bin:$PATH
 ENV OPENCODE_CONFIG=/home/node/config.json
 ENV OPENCODE_CONFIG_DIR=/workspace
+ENV PI_CODING_AGENT_DIR=/workspace/.pi
 ENV T_UID=1000
 ENV EDITOR=nano
 ENV VISUAL=nano
