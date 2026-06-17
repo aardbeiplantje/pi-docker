@@ -29,5 +29,15 @@
   "permission": {
       "edit": "allow",
       "bash": "allow"
+  },
+  "plugin": [
+      "opencode-codebase-index"
+  ],
+  "compaction": {
+    "auto": true,
+    "threshold": 0.75,
+    "strategy": "summarize",
+    "preserveRecentMessages": 6,
+    "preserveSystemPrompt": true
   }
 }

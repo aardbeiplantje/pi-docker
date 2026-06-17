@@ -78,22 +78,28 @@ USER node
 
 ARG CACHEBUST=1
 
-# opencode
 WORKDIR /home/node
-ENV NPM_CONFIG_PREFIX=/home/node/.npm-global
-ENV PATH=$PATH:/home/node/.npm-global/bin
-ENV PATH=/home/node/.opencode/bin:/home/node/.local/bin:$PATH
-ENV BUN_INSTALL=/home/node/.bun
-RUN npm set prefix /home/node/
+ENV HDIR=/home/node
+ENV PATH=$HDIR/.opencode/bin:$HDIR/.local/bin:$PATH
+ENV OPENCODE_CONFIG_DIR=$HDIR/.config/opencode
+ENV OPENCODE_CONFIG=$OPENCODE_CONFIG_DIR/opencode.json
+COPY --chown=node:node config.json $OPENCODE_CONFIG
+
+# opencode
+ENV NPM_CONFIG_PREFIX=$HDIR/.npm-global
+ENV PATH=$PATH:$HDIR/.npm-global/bin
+ENV BUN_INSTALL=$HDIR/.bun
+RUN npm set prefix $HDIR
 RUN npm install -g npm
 RUN npm install -g bun
 RUN npm install -g @ai-sdk/openai-compatible
 RUN npm install -g opencode-ai
-RUN opencode run "dummy"
+RUN npm install -g opencode-codebase-index
+RUN npm install -g @modelcontextprotocol/sdk zod
+RUN opencode plugin @tarquinen/opencode-dcp@latest --global
 
 # pi.dev
-WORKDIR /home/node
-ENV PI_CODING_AGENT_DIR=/home/node/.pi
+ENV PI_CODING_AGENT_DIR=$HDIR/.pi
 ENV LEMONADE_URL=http://[::1]:13305
 RUN npm install -g --ignore-scripts @earendil-works/pi-coding-agent
 RUN npm install -g --ignore-scripts @earendil-works/pi-agent-core
@@ -102,8 +108,10 @@ RUN npm install -g --ignore-scripts @earendil-works/pi-tui
 RUN pi install npm:fd
 RUN pi install npm:pi-llama-cpp
 RUN pi install git:github.com/lemonade-sdk/lemonade-pi-plugin@main
-COPY pi_settings.json /home/node/.pi/settings.json
-COPY pi_auth.json /home/node/.pi/auth.json
+RUN pi install npm:pi-memctx
+RUN pi install npm:@0xkobold/pi-codebase-wiki
+COPY pi_settings.json $HDIR/.pi/settings.json
+COPY pi_auth.json $HDIR/.pi/auth.json
 
 USER root
 RUN rm -rf /tmp/* /tmp/.*.so
@@ -111,12 +119,9 @@ RUN mkdir -p /workspace
 RUN mkdir -p /workdir
 RUN mkdir -p /opt/rocm
 COPY aicli.pl /
-COPY config.json /home/node/config.json
 COPY skills /skills/
 
 USER root
-ENV PATH=/home/node/.opencode/bin:/home/node/.local/bin:$PATH
-ENV OPENCODE_CONFIG=/home/node/config.json
 ENV OPENCODE_CONFIG_DIR=/workspace
 ENV T_UID=1000
 ENV EDITOR=nano
