@@ -100,7 +100,7 @@ if(length($ENV{ROCM_PATH}//"")){
         or die "[ERROR] failed close $b_fn: $!\n";
 }
 
-# setup /workspace/.opencode
+# setup /workspace/ subdirs
 foreach my $d ('.opencode', '.local', '.config', '.cache', '.pi'){
     my $sd = "$workspace/$d";
     if(!-d $sd){
@@ -225,6 +225,13 @@ die "[ERROR] running as root EGID/RGID is not allowed\n"
 $ENV{XDG_CACHE_HOME} = "$workspace/.cache";
 $ENV{PROMPT_COMMAND} = 'history -a';
 $ENV{HISTFILE} = $history_path;
+$ENV{HOME} = "/home/node";
+$ENV{LOGNAME} = "node";
+
+print "LS \$HOME\n";
+system("ls -la $ENV{HOME}") == 0 or die;
+print "LS ~/\n";
+system("ls -la ~/") == 0 or die;
 
 
 # $ENV{BDIR} was mounted on /workdir/$BDIR
@@ -240,8 +247,6 @@ if($ENV{BDIR}){
 if (@ARGV && $ARGV[0] eq "-pi") {
     # Remove the 'pi' command from arguments and pass rest to pi binary
     # Set HOME environment variable for node user
-    $ENV{HOME} = "/home/node";
-    $ENV{LOGNAME} = "node";
     shift @ARGV;
     exec("/home/node/.npm-global/bin/pi", @ARGV)
         or die "[ERROR] failed to exec pi: $!\n";
@@ -249,8 +254,6 @@ if (@ARGV && $ARGV[0] eq "-pi") {
 # Otherwise, run opencode CLI with all provided arguments
 # Set HOME environment variable for node user
 $ENV{OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT} = "true";
-$ENV{HOME} = "/home/node";
-$ENV{LOGNAME} = "node";
 @ARGV && $ARGV[0] eq "-opencode" && shift @ARGV;
 exec("/home/node/.npm-global/bin/opencode", @ARGV)
     or die "[ERROR] failed to exec: $!\n";

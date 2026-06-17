@@ -9,7 +9,7 @@
     "**.sw~"
   ],
   "embeddingProvider": "custom",
-  "scope": "global",
+  "scope": "project",
   "customProvider": {
     "baseUrl": "http://[2a02:a03f:8789:e700::20]:13305/api/v1",
     "apiKey": "nokey",

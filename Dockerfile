@@ -73,6 +73,13 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /
       docker-buildx-plugin \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+USER root
+
+RUN mkdir -p /workspace/.local \
+    && rm -rf $HDIR/.local; \
+    ln -sfT /workspace/.local $HDIR/.local \
+    && chown node:node /workspace/.local
+
 # Set up non-root user
 USER node
 
@@ -114,8 +121,15 @@ RUN pi install npm:@0xkobold/pi-codebase-wiki
 COPY pi_settings.json $HDIR/.pi/settings.json
 COPY pi_auth.json $HDIR/.pi/auth.json
 
+
 USER root
-RUN rm -rf /tmp/* /tmp/.*.so
+RUN mkdir -p /workspace/.local
+USER node
+RUN rm -rf $HDIR/.local \
+    && ln -sfT /workspace/.local $HDIR/.local \
+    && chown node:node /workspace/.local
+USER root
+RUN rm -rf /tmp/* /tmp/.*.so /workspace/.local
 RUN mkdir -p /workspace
 RUN mkdir -p /workdir
 RUN mkdir -p /opt/rocm
