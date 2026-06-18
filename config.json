@@ -41,11 +41,6 @@
     "preserveSystemPrompt": true
   },
   "mcp": {
-    "codebase-index": {
-      "type": "local",
-      "enabled": true,
-      "command": ["npx", "opencode-codebase-index-mcp", "--project", "/workdir/{env:BDIR}"]
-    },
     "cocoindex-code": {
       "type": "local",
       "enabled": true,
