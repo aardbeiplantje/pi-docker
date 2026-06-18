@@ -41,10 +41,10 @@
     "preserveSystemPrompt": true
   },
   "mcp": {
-    "cocoindex-code": {
+    "ccc-granular": {
       "type": "local",
       "enabled": true,
-      "command": ["ccc", "mcp"]
+      "command": ["python3", "/home/node/mcp_servers/ccc_granular/server.py"]
     }
   }
 }

@@ -138,7 +138,7 @@ RUN mkdir -p $TMPDIR && chmod +s $TMPDIR
 RUN \
     --mount=target=/pip,type=cache,sharing=locked \
     python3 -m pip install --prefer-binary --upgrade \
-        cocoindex-code
+        cocoindex-code mcp
 COPY cocoindex.yml $COCOINDEX_CODE_DIR/global_settings.yml
 
 USER root
@@ -153,7 +153,7 @@ RUN mkdir -p /workspace
 RUN mkdir -p /workdir
 RUN mkdir -p /opt/rocm
 COPY aicli.pl /
-COPY skills /skills/
+COPY mcp_servers /home/node/mcp_servers
 
 USER root
 ENV OPENCODE_CONFIG_DIR=/workspace
