@@ -15,7 +15,7 @@
               "jsonMode": true
           },
           "parameters": {
-            "stop": ["<|im_end|>", "<|object_ref_start|>"],
+            "stop": ["<|im_end|>", "<|object_ref_start|>", "</tool_call>"],
             "temperature": 0.1
           },
           "extraArgs": {
