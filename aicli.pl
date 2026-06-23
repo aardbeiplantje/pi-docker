@@ -237,6 +237,9 @@ if($ENV{BDIR}){
         or die "[ERROR] chdir to /workdir/: $!\n";
 }
 
+# init ccc
+system("ccc init >/dev/null 2>&1");
+
 # If first argument is 'pi', run pi-coding-agent instead
 if (@ARGV && $ARGV[0] eq "-pi") {
     # Remove the 'pi' command from arguments and pass rest to pi binary
