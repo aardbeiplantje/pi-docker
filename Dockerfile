@@ -105,6 +105,7 @@ RUN npm install -g opencode-ai
 RUN npm install -g opencode-codebase-index
 RUN npm install -g @modelcontextprotocol/sdk zod
 RUN opencode plugin @tarquinen/opencode-dcp@latest --global
+RUN chmod +x $HDIR/.npm-global/bin/*
 
 # pi.dev
 ENV PI_CODING_AGENT_DIR=$HDIR/.pi
