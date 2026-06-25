@@ -90,7 +90,7 @@ ENV HDIR=/home/node
 ENV PATH=$HDIR/.opencode/bin:$HDIR/.local/bin:$PATH
 ENV OPENCODE_CONFIG_DIR=$HDIR/.config/opencode
 ENV OPENCODE_CONFIG=$OPENCODE_CONFIG_DIR/opencode.json
-COPY --chown=node:node config.json $OPENCODE_CONFIG
+COPY --chown=node:node opencode.json $OPENCODE_CONFIG
 COPY --chown=node:node codebase-index.json $OPENCODE_CONFIG_DIR/
 
 # opencode
@@ -107,6 +107,7 @@ RUN npm install -g opencode-working-memory
 RUN npm install -g @modelcontextprotocol/sdk zod
 RUN opencode plugin @tarquinen/opencode-dcp@latest --global
 RUN chmod +x $HDIR/.npm-global/bin/*
+COPY tui.json $OPENCODE_CONFIG_DIR/tui.json
 
 # pi.dev
 ENV PI_CODING_AGENT_DIR=$HDIR/.pi
@@ -122,7 +123,6 @@ RUN pi install npm:pi-memctx
 RUN pi install npm:@0xkobold/pi-codebase-wiki
 COPY pi_settings.json $HDIR/.pi/settings.json
 COPY pi_auth.json $HDIR/.pi/auth.json
-COPY tui.json $HDIR/.pi/tui.json
 
 # cocoindex
 USER root

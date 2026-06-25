@@ -51,11 +51,6 @@
       "type": "local",
       "enabled": true,
       "command": ["ccc", "mcp"]
-    },
-    "opencode-working-memory": {
-      "type": "local",
-      "enabled": true,
-      "command": ["opencode-working-memory", "mcp"]
     }
   }
 }
