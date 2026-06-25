@@ -31,7 +31,8 @@
     "bash": "allow"
   },
   "plugin": [
-    "opencode-codebase-index"
+    "opencode-codebase-index",
+    "opencode-working-memory"
   ],
   "compaction": {
     "auto": true,
@@ -50,6 +51,11 @@
       "type": "local",
       "enabled": true,
       "command": ["ccc", "mcp"]
+    },
+    "opencode-working-memory": {
+      "type": "local",
+      "enabled": true,
+      "command": ["opencode-working-memory", "mcp"]
     }
   }
 }
