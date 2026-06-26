@@ -71,6 +71,15 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /
       docker-ce-rootless-extras \
       docker-compose-plugin \
       docker-buildx-plugin \
+      git \
+      cmake \
+      ninja-build \
+      build-essential \
+      clang \
+      pkg-config \
+      glslc \
+      vulkan-tools \
+      libvulkan-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 USER root
