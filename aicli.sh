@@ -59,7 +59,7 @@ if [ "${DIND:-0}" = "1" ]; then
     extra_opts="$extra_opts -e DIND --privileged=true"
 fi
 
-ROCM_PATH=${ROCM_PATH:-~/therock-dist-linux-gfx1151-latest}
+ROCM_PATH=${ROCM_PATH:-/opt/rocm}
 ROCM_PATH=$(readlink -f "$ROCM_PATH")
 exec docker run --rm -it \
     $extra_opts \
