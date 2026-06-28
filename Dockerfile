@@ -75,6 +75,8 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /
       cmake \
       ninja-build \
       build-essential \
+      binutils \
+      nasm \
       clang \
       pkg-config \
       glslc \
