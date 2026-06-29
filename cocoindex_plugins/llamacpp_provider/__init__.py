@@ -60,10 +60,22 @@ def _build_handler():
             
             return _run()
         
-        async def _aembedding(self, model, input, logging_obj, api_base, api_key, 
+        async def aembedding(self, model, input, logging_obj, api_base, api_key, 
                              timeout, optional_params, model_response, print_verbose, 
-                             litellm_params, **kwargs):
+                             litellm_params, aembedding=True, **kwargs):
+            """Handle async embedding requests (required by litellm.aembedding)."""
+            return await self._aembedding(
+                model=model, input=input, logging_obj=logging_obj,
+                api_base=api_base, api_key=api_key, timeout=timeout,
+                optional_params=optional_params, model_response=model_response,
+                print_verbose=print_verbose, litellm_params=litellm_params, **kwargs
+            )
+        
+        async def _aembedding(self, model, input, logging_obj, api_base, api_key, 
+                              timeout, optional_params, model_response, print_verbose, 
+                              litellm_params, **kwargs):
             """Handle async embedding requests via direct HTTP call."""
+            import os
             import httpx
             from litellm.types.utils import Embedding, Usage
             
@@ -72,6 +84,8 @@ def _build_handler():
                 "input": input if isinstance(input, list) else [input],
                 "encoding_format": optional_params.get("encoding_format", "float")
             }
+            if not api_base:
+                api_base = (litellm_params or {}).get("api_base") or os.environ.get("OPENAI_BASE_URL") or ""
             base_url = api_base.rstrip("/")
             endpoint = f"{base_url}/v1/embeddings"
             headers = {

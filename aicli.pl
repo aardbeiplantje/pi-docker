@@ -225,7 +225,7 @@ if($< == 0){
     
     if (open(my $out, ">", $coco_file)) {
         print $out "embedding:\n";
-        print $out "  model: openai/$index_model\n";
+        print $out "  model: llamacpp/$index_model\n";
         print $out "  min_interval_ms: 300\n";
         print $out "  indexing_params:\n";
         print $out "    input_type: search_document\n";
