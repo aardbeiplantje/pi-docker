@@ -15,8 +15,9 @@ const PLUGIN_DIR = new URL(import.meta.url).pathname.substring(
 const PYTHON_SCRIPT = PLUGIN_DIR + '/slot_cache.py'
 
 export const SlotCachePlugin = async ({ project, directory, $, dispose, client }) => {
-  const LLAMA_SERVER_URL = process.env.LLAMA_SERVER_URL || 'http://[::1]:4000'
-  const USER = process.env.USER || process.env.LOGNAME || 'node'
+ const RAW_URL = process.env.LLAMA_SERVER_URL || 'http://[::1]:8000'
+  const LLAMA_SERVER_URL = RAW_URL.replace(/\/v1(\/.*)?$/, '')
+  const USER = process.env.UID || process.env.USER || process.env.LOGNAME || 'node'
   const SLOT_ID = parseInt(process.env.SLOT_ID || '0', 10)
   const SAVE_INTERVAL_MS = parseInt(process.env.SLOT_SAVE_INTERVAL_MS || '300000', 10)
   const CACHE_BASE_DIR = project ? directory : process.env.HOME || '/home/node'
@@ -24,11 +25,12 @@ export const SlotCachePlugin = async ({ project, directory, $, dispose, client }
   const MODEL_NAME = process.env.LLAMA_MODEL || ''
 
   function makeCacheName() {
-    if (!directory) return `${USER}@root`
+    const modelId = MODEL_NAME || 'default'
+    const modelShort = modelId.split('/').pop().split(':').shift().replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30)
+    if (!directory) return `${USER}_${modelShort}_root`
     const parts = directory.split('/').filter(Boolean)
-    const lastTwo = parts.slice(-2)
-    const short = lastTwo.map(p => p.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 20)).join('_')
-    return `${USER}@${short}`
+    const base = parts[parts.length - 1].replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30)
+    return `${USER}_${modelShort}_${base}`
   }
 
   const cacheName = makeCacheName()
