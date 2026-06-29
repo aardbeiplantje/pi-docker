@@ -100,11 +100,50 @@ def check_cache(cache_name, cache_dir, server_url=None):
     """Check if slot cache is available.
     
     Returns True if local meta exists, server is compatible, and cache is recent (< 24h).
-    Returns False if server is known incompatible (no slots API) or cache is stale.
+    Returns False if server is known incompatible (no slots API).
+    Returns None if no cache but server is compatible (API may work, just no cache yet).
     """
     if not _check_meta_available(cache_dir, server_url):
         return False
-    return _check_meta_exists(cache_dir)
+    if not _check_meta_exists(cache_dir):
+        return None
+    return True
+
+
+def verify_api(server_url, slot_id, cache_dir, model=None):
+    """Verify that the /slots API is supported by the server.
+    
+    Returns True if the server supports /slots, False otherwise.
+    Records incompatibility in meta if the API is not available.
+    """
+    cache_file = "verify.kv"
+    payload = {"filename": cache_file, "model": model or ""}
+    
+    url = f"{server_url}/slots/{slot_id}?action=save"
+    try:
+        resp = httpx.post(url, json=payload, timeout=30)
+        if resp.status_code == 404:
+            _update_meta(cache_dir, {
+                "action": "unavailable",
+                "server": server_url,
+                "reason": "slots API not supported",
+                "time": time.time()
+            })
+            return False
+        resp.raise_for_status()
+        return True
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 404:
+            _update_meta(cache_dir, {
+                "action": "unavailable",
+                "server": server_url,
+                "reason": "slots API not supported",
+                "time": time.time()
+            })
+            return False
+        return False
+    except httpx.HTTPError:
+        return False
 
 
 def _check_meta_exists(cache_dir):
@@ -138,7 +177,7 @@ def _update_meta(cache_dir, entry):
 
 def main():
     parser = argparse.ArgumentParser(description="llama.cpp slot cache manager")
-    parser.add_argument("command", choices=["save", "restore", "check"])
+    parser.add_argument("command", choices=["save", "restore", "check", "verify"])
     parser.add_argument("server_url", help="llama.cpp server base URL (e.g. http://[::1]:4000)")
     parser.add_argument("slot_id", type=int, help="Slot ID to manage")
     parser.add_argument("cache_name", help="Cache name (namespaced, e.g. user@dir)")
@@ -150,9 +189,22 @@ def main():
         if args.command == "save":
             save_slot(args.server_url, args.slot_id, args.cache_name, args.cache_dir, model=args.model)
         elif args.command == "restore":
-            sys.exit(0 if restore_slot(args.server_url, args.slot_id, args.cache_name, args.cache_dir) else 1)
+            sys.exit(0 if restore_slot(args.server_url, args.slot_id, args.cache_name, args.cache_dir, model=args.model) else 1)
         elif args.command == "check":
-            sys.exit(0 if check_cache(args.cache_name, args.cache_dir, server_url=args.server_url) else 1)
+            result = check_cache(args.cache_name, args.cache_dir, server_url=args.server_url)
+            if result is None:
+                # No cache but API may be available (server might be incompatible too)
+                # Exit 1 to indicate no cache, but don't mark API as unavailable
+                sys.exit(1)
+            elif result is False:
+                sys.exit(2)  # Server known incompatible
+            else:
+                sys.exit(0)
+        elif args.command == "verify":
+            if verify_api(args.server_url, args.slot_id, args.cache_dir, model=args.model):
+                sys.exit(0)
+            else:
+                sys.exit(1)
     except httpx.HTTPStatusError as e:
         print(f"[slot-cache] HTTP error: {e.response.status_code} - {e.response.text}", file=sys.stderr)
         sys.exit(1)

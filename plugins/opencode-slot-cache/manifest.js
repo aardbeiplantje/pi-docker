@@ -47,15 +47,21 @@ export const SlotCachePlugin = async ({ project, directory, $, dispose, client }
     }
   }
 
-  // Restore slot cache on plugin init (session start)
+  // Verify slots API is supported, then restore if cache exists
   if (slotApiAvailable) {
     try {
-      const { exitCode } = await $`python3 ${PYTHON_SCRIPT} check ${LLAMA_SERVER_URL} ${SLOT_ID} ${cacheName} ${SLOT_CACHE_DIR} --model ${MODEL_NAME}`
-      if (exitCode === 0) {
-        await $`python3 ${PYTHON_SCRIPT} restore ${LLAMA_SERVER_URL} ${SLOT_ID} ${cacheName} ${SLOT_CACHE_DIR} --model ${MODEL_NAME}`
-        console.log(`[slot-cache] restored slot ${SLOT_ID} from cache "${cacheName}"`)
-      } else {
+      const { exitCode: verifyCode } = await $`python3 ${PYTHON_SCRIPT} verify ${LLAMA_SERVER_URL} ${SLOT_ID} ${cacheName} ${SLOT_CACHE_DIR} --model ${MODEL_NAME}`
+      if (verifyCode !== 0) {
         slotApiUnav()
+      } else {
+        const { exitCode } = await $`python3 ${PYTHON_SCRIPT} check ${LLAMA_SERVER_URL} ${SLOT_ID} ${cacheName} ${SLOT_CACHE_DIR} --model ${MODEL_NAME}`
+        if (exitCode === 0) {
+          await $`python3 ${PYTHON_SCRIPT} restore ${LLAMA_SERVER_URL} ${SLOT_ID} ${cacheName} ${SLOT_CACHE_DIR} --model ${MODEL_NAME}`
+          console.log(`[slot-cache] restored slot ${SLOT_ID} from cache "${cacheName}"`)
+        } else if (exitCode !== 2) {
+          // exitCode 1 = no cache (OK, first run), exitCode 2 = server incompatible (already handled by verify)
+          console.log(`[slot-cache] no slot cache found for "${cacheName}"`)
+        }
       }
     } catch (e) {
       slotApiUnav()
@@ -115,9 +121,10 @@ export const SlotCachePlugin = async ({ project, directory, $, dispose, client }
         if (exitCode === 0 && input && input.model) {
           if (!input.model.extraBody) input.model.extraBody = {}
           input.model.extraBody.id_slot = SLOT_ID
-        } else {
+        } else if (exitCode === 2) {
           slotApiUnav()
         }
+        // exitCode 1 = no cache, don't mark API as unavailable
       } catch {
         slotApiUnav()
       }
