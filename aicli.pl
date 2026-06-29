@@ -211,6 +211,35 @@ if($< == 0){
         if $!;
 }
 
+# Generate dynamic cocoindex global_settings.yml from ENV vars
+{
+    my $coco_dir = $ENV{HDIR} . "/.cocoindex";
+    my $coco_file = "$coco_dir/global_settings.yml";
+    my $base_url = $ENV{LLAMA_SERVER_URL} // "http://[::1]:4000/v1";
+    my $api_key = $ENV{LLAMA_SERVER_API_KEY} // "nokeyneeded";
+    my $index_model = $ENV{INDEX_MODEL} // "embeddinggemma-300M-Q8_0";
+    
+    # YAML single-quote strings: escape ' by doubling them
+    (my $qurl = $base_url) =~ s/'/''/g;
+    (my $qkey = $api_key) =~ s/'/''/g;
+    
+    if (open(my $out, ">", $coco_file)) {
+        print $out "embedding:\n";
+        print $out "  model: openai/$index_model\n";
+        print $out "  min_interval_ms: 300\n";
+        print $out "  indexing_params:\n";
+        print $out "    input_type: search_document\n";
+        print $out "  query_params:\n";
+        print $out "    input_type: search_query\n";
+        print $out "envs:\n";
+        print $out "  OPENAI_BASE_URL: '$qurl'\n";
+        print $out "  OPENAI_API_KEY: '$qkey'\n";
+        close($out);
+    } else {
+        warn "[WARN] could not write $coco_file: $!\n";
+    }
+}
+
 # Final safety check: ensure we're not running as root
 die "[ERROR] running as root EUID/RUID is not allowed\n"
     if $< == 0 or $> == 0;
@@ -248,6 +277,8 @@ if (@ARGV && $ARGV[0] eq "-pi") {
     exec("/home/node/.npm-global/bin/pi", @ARGV)
         or die "[ERROR] failed to exec pi: $!\n";
 }
+# Register custom LiteLLM providers (llamacpp embedding support)
+system("python3 /cocoindex_plugins/register_providers.py");
 # Otherwise, run opencode CLI with all provided arguments
 # Set HOME environment variable for node user
 $ENV{OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT} = "true";

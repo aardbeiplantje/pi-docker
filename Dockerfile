@@ -164,10 +164,9 @@ COPY --chown=node:node opencode.json $OPENCODE_CONFIG
 COPY tui.json $OPENCODE_CONFIG_DIR/tui.json
 COPY aicli.pl /
 COPY mcp_servers /mcp
+COPY --chown=root:root cocoindex_plugins /cocoindex_plugins
 COPY pi_settings.json $HDIR/.pi/settings.json
 COPY pi_auth.json $HDIR/.pi/auth.json
-COPY cocoindex.yml $COCOINDEX_CODE_DIR/global_settings.yml
-
 USER root
 ENV TMPDIR=/pip/tmp
 ENV XDG_CACHE_HOME=/pip
@@ -178,6 +177,7 @@ ENV COCOINDEX_CODE_DB_PATH_MAPPING=/workdir=/coco-db-files
 ENV COCOINDEX_DISABLE_USAGE_TRACKING=1
 RUN mkdir -p /coco-db-files && chown node:node /coco-db-files
 RUN mkdir -p $HDIR/.cocoindex/ && chown node:node $HDIR/.cocoindex
+RUN mkdir -p /usr/local/lib/python3.13/dist-packages/cocoindex_plugins && cp /cocoindex_plugins/__init__.py /usr/local/lib/python3.13/dist-packages/cocoindex_plugins/ && cp /cocoindex_plugins/register_providers.py /usr/local/lib/python3.13/dist-packages/cocoindex_plugins/ && cp -r /cocoindex_plugins/llamacpp_provider /usr/local/lib/python3.13/dist-packages/cocoindex_plugins/ && chown -R root:root /usr/local/lib/python3.13/dist-packages/cocoindex*
 VOLUME $HDIR/.cocoindex
 ENV OPENCODE_CONFIG_DIR=/workspace
 ENV T_UID=1000
