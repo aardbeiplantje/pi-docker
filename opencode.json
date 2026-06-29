@@ -33,7 +33,8 @@
 "plugin": [
     "opencode-working-memory",
     "opencode-plugin-openspec",
-    "opencode-mem"
+    "opencode-mem",
+    "/plugins/opencode-slot-cache/manifest.js"
 ],
   "compaction": {
     "auto": true,

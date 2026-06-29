@@ -167,6 +167,7 @@ COPY mcp_servers /mcp
 COPY --chown=root:root cocoindex_plugins /cocoindex_plugins
 COPY pi_settings.json $HDIR/.pi/settings.json
 COPY pi_auth.json $HDIR/.pi/auth.json
+COPY --chown=node:node plugins /plugins
 USER root
 ENV TMPDIR=/pip/tmp
 ENV XDG_CACHE_HOME=/pip
