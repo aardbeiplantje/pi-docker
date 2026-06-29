@@ -232,13 +232,13 @@ $ENV{LOGNAME} = "node";
 if($ENV{BDIR}){
     chdir("/workdir/$ENV{BDIR}")
         or die "[ERROR] chdir to /workdir/$ENV{BDIR}: $!\n";
+
+    # init ccc
+    system("ccc init >/dev/null 2>&1");
 } else {
     chdir("/workdir")
         or die "[ERROR] chdir to /workdir/: $!\n";
 }
-
-# init ccc
-system("ccc init >/dev/null 2>&1");
 
 # If first argument is 'pi', run pi-coding-agent instead
 if (@ARGV && $ARGV[0] eq "-pi") {

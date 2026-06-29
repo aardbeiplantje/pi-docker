@@ -6,5 +6,5 @@ embedding:
   query_params:
     input_type: search_query
 envs:
-  OPENAI_BASE_URL: http://[2a02:a03f:8789:e700::20]:13305/api/v1
+  OPENAI_BASE_URL: http://[2a02:a03f:8789:e700::20]:8000/v1/
   OPENAI_API_KEY: nokeyneeded

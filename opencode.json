@@ -31,7 +31,6 @@
     "bash": "allow"
   },
 "plugin": [
-    "opencode-codebase-index",
     "opencode-working-memory",
     "opencode-plugin-openspec",
     "opencode-mem"
@@ -47,7 +46,7 @@
     "ccc-granular": {
       "type": "local",
       "enabled": true,
-      "command": ["python3", "/home/node/mcp_servers/ccc_granular/server.py"]
+      "command": ["python3", "/mcp/ccc_granular/server.py"]
     },
     "cocoindex-code": {
       "type": "local",

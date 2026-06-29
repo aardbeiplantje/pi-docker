@@ -95,15 +95,11 @@ RUN mkdir -p /workspace/.local \
 # Set up non-root user
 USER node
 
-ARG CACHEBUST=1
-
 WORKDIR /home/node
 ENV HDIR=/home/node
 ENV PATH=$HDIR/.opencode/bin:$HDIR/.local/bin:$PATH
 ENV OPENCODE_CONFIG_DIR=$HDIR/.config/opencode
 ENV OPENCODE_CONFIG=$OPENCODE_CONFIG_DIR/opencode.json
-COPY --chown=node:node opencode.json $OPENCODE_CONFIG
-COPY --chown=node:node codebase-index.json $OPENCODE_CONFIG_DIR/
 
 # opencode
 ENV NPM_CONFIG_PREFIX=$HDIR/.npm-global
@@ -114,14 +110,12 @@ RUN npm install -g npm
 RUN npm install -g bun
 RUN npm install -g @ai-sdk/openai-compatible
 RUN npm install -g opencode-ai
-RUN npm install -g opencode-codebase-index
 RUN npm install -g opencode-working-memory
 RUN npm install -g @modelcontextprotocol/sdk zod
 RUN npm install -g opencode-plugin-openspec
 RUN npm install -g opencode-mem
 RUN opencode plugin @tarquinen/opencode-dcp@latest --global
 RUN chmod +x $HDIR/.npm-global/bin/*
-COPY tui.json $OPENCODE_CONFIG_DIR/tui.json
 
 # pi.dev
 ENV PI_CODING_AGENT_DIR=$HDIR/.pi
@@ -135,8 +129,6 @@ RUN pi install npm:pi-llama-cpp
 RUN pi install git:github.com/lemonade-sdk/lemonade-pi-plugin@main
 RUN pi install npm:pi-memctx
 RUN pi install npm:@0xkobold/pi-codebase-wiki
-COPY pi_settings.json $HDIR/.pi/settings.json
-COPY pi_auth.json $HDIR/.pi/auth.json
 
 # cocoindex
 USER root
@@ -147,16 +139,15 @@ ENV PIP_ROOT_USER_ACTION=ignore
 ENV COCOINDEX_CODE_DIR=$HDIR/.cocoindex
 ENV COCOINDEX_CODE_DB_PATH_MAPPING=/workdir=/coco-db-files
 ENV COCOINDEX_DISABLE_USAGE_TRACKING=1
-RUN mkdir -p /coco-db-files && chown node:node /coco-db-files
-RUN mkdir -p $HDIR/.cocoindex/ && chown node:node $HDIR/.cocoindex
-VOLUME $HDIR/.cocoindex
 
 RUN mkdir -p $TMPDIR && chmod +s $TMPDIR
 RUN \
     --mount=target=/pip,type=cache,sharing=locked \
     python3 -m pip install --prefer-binary --upgrade \
         cocoindex-code mcp
-COPY cocoindex.yml $COCOINDEX_CODE_DIR/global_settings.yml
+
+FROM base AS runtime
+USER root
 
 USER root
 RUN mkdir -p /workspace/.local
@@ -169,15 +160,27 @@ RUN rm -rf /tmp/* /tmp/.*.so /workspace/.local
 RUN mkdir -p /workspace
 RUN mkdir -p /workdir
 RUN mkdir -p /opt/rocm
+COPY --chown=node:node opencode.json $OPENCODE_CONFIG
+COPY tui.json $OPENCODE_CONFIG_DIR/tui.json
 COPY aicli.pl /
-COPY mcp_servers /home/node/mcp_servers
+COPY mcp_servers /mcp
+COPY pi_settings.json $HDIR/.pi/settings.json
+COPY pi_auth.json $HDIR/.pi/auth.json
+COPY cocoindex.yml $COCOINDEX_CODE_DIR/global_settings.yml
 
 USER root
+ENV TMPDIR=/pip/tmp
+ENV XDG_CACHE_HOME=/pip
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+ENV PIP_ROOT_USER_ACTION=ignore
+ENV COCOINDEX_CODE_DIR=$HDIR/.cocoindex
+ENV COCOINDEX_CODE_DB_PATH_MAPPING=/workdir=/coco-db-files
+ENV COCOINDEX_DISABLE_USAGE_TRACKING=1
+RUN mkdir -p /coco-db-files && chown node:node /coco-db-files
+RUN mkdir -p $HDIR/.cocoindex/ && chown node:node $HDIR/.cocoindex
+VOLUME $HDIR/.cocoindex
 ENV OPENCODE_CONFIG_DIR=/workspace
 ENV T_UID=1000
 ENV EDITOR=nano
 ENV VISUAL=nano
 ENTRYPOINT ["/usr/bin/perl", "/aicli.pl"]
-
-FROM base AS runtime
-USER root
