@@ -56,7 +56,23 @@ async function closeLogFile() {
   }
 }
 
-async function runPython(args) {
+async function showToastVariant($, cacheName, serverUrl, variant, title, action) {
+    if (!cacheName) return
+    const now = new Date().toLocaleString()
+    const message = `${action} — ${cacheName} at ${now} — ${serverUrl}`
+    try {
+      const tui = $.client?.tui
+      if (tui && tui.showToast) {
+        tui.showToast({ title, message, variant, duration: 3000 })
+        logToFile('INFO', `toast: ${variant} — ${message}`)
+      } else {
+        logToFile('INFO', `toast API not available (variant=${variant}, title=${title})`)
+      }
+    } catch (e) {
+      logToFile('WARN', `toast error: ${e.message || e}`)
+    }
+  }
+  async function runPython(args) {
   try {
     const child = Bun.spawn(
       ['python3', PYTHON_SCRIPT, ...args],
@@ -96,6 +112,8 @@ export const SlotCachePlugin = async ({ directory, $, dispose }) => {
   let currentSessionId = null
   let cacheName = null
   let _checkedCache = false
+  let slotRestored = false
+  let lastChatParamsTime = 0
 
   function slotApiUnav() {
     if (slotApiAvailable) {
@@ -126,6 +144,12 @@ export const SlotCachePlugin = async ({ directory, $, dispose }) => {
   let idleTimerId = null
   async function periodicSave() {
     if (!slotApiAvailable || !cacheName) return
+    const idleMs = Date.now() - lastChatParamsTime
+    if (idleMs > 60000) {
+      logToFile('INFO', `periodic save skipped — session idle for ${Math.round(idleMs / 1000)}s`)
+       showToastVariant($, cacheName, LLAMA_SERVER_URL, 'warning', 'Slot Cache', `Skipped (idle ${Math.round(idleMs / 1000)}s)`)
+      return
+    }
     try {
       const { exitCode } = await pythonRun(
         ['save', LLAMA_SERVER_URL, String(SLOT_ID), cacheName, SLOT_CACHE_DIR, '--model', MODEL_NAME],
@@ -133,11 +157,14 @@ export const SlotCachePlugin = async ({ directory, $, dispose }) => {
       )
       if (exitCode === 0) {
         logToFile('INFO', `saved slot ${SLOT_ID} (interval save), exitCode=${exitCode}`)
+        showToastVariant($, cacheName, LLAMA_SERVER_URL, 'success', 'Slot Cache', 'Saved')
       } else {
         logToFile('WARN', `periodic save failed for slot ${SLOT_ID}, exitCode=${exitCode}`)
+        showToastVariant($, cacheName, LLAMA_SERVER_URL, 'error', 'Slot Cache', 'Periodic save failed')
       }
     } catch (e) {
       logToFile('ERROR', `periodic save error: ${e.message || e}`)
+      showToastVariant($, cacheName, LLAMA_SERVER_URL, 'error', 'Slot Cache', 'Periodic save error')
     }
   }
   idleTimerId = setInterval(periodicSave, SAVE_INTERVAL_MS)
@@ -157,11 +184,14 @@ export const SlotCachePlugin = async ({ directory, $, dispose }) => {
           )
           if (exitCode === 0) {
             logToFile('INFO', `saved slot ${SLOT_ID} on exit, exitCode=${exitCode}`)
+            showToastVariant($, cacheName, LLAMA_SERVER_URL, 'success', 'Slot Cache', 'Saved on exit')
           } else {
             logToFile('WARN', `save on exit failed for slot ${SLOT_ID}, exitCode=${exitCode}`)
+            showToastVariant($, cacheName, LLAMA_SERVER_URL, 'error', 'Slot Cache', 'Save on exit failed')
           }
         } catch (e) {
           logToFile('ERROR', `save on exit error: ${e.message || e}`)
+          showToastVariant($, cacheName, LLAMA_SERVER_URL, 'error', 'Slot Cache', 'Save on exit error')
         }
       }
       await closeLogFile()
@@ -175,21 +205,24 @@ export const SlotCachePlugin = async ({ directory, $, dispose }) => {
       try {
         // Capture session ID at session start (session.idle)
         if (event.type === 'session.idle') {
-          logToFile('INFO', `got {event.type}`)
+          slotRestored = false
+          logToFile('INFO', `session.idle: resetting slotRestored for new session`)
           const sid = event.properties?.sessionID
           if (sid) {
             updateCacheName(sid)
           }
           logToFile('INFO', `event: ${event.type}, sessionID=${sid?.slice(0,8)}`)
           // Try to restore cached slot; if no cache exists, immediately save to create one
-          if (cacheName) {
+          if (cacheName && !slotRestored) {
             // Step 1: try restore
             const { exitCode: restoreExit } = await pythonRun(
               ['restore', LLAMA_SERVER_URL, String(SLOT_ID), cacheName, SLOT_CACHE_DIR, '--model', MODEL_NAME],
               'startup restore'
             )
             if (restoreExit === 0) {
+              slotRestored = true
               logToFile('INFO', `restored slot ${SLOT_ID} from cache`)
+              showToastVariant($, cacheName, LLAMA_SERVER_URL, 'success', 'Slot Cache', 'Restored')
             } else {
               // No cache yet — immediately save to create one
               logToFile('INFO', `no cache to restore for slot ${SLOT_ID} (exit ${restoreExit}), saving now`)
@@ -199,10 +232,14 @@ export const SlotCachePlugin = async ({ directory, $, dispose }) => {
               )
               if (saveExit === 0) {
                 logToFile('INFO', `saved slot ${SLOT_ID} (initial save)`)
+                showToastVariant($, cacheName, LLAMA_SERVER_URL, 'info', 'Slot Cache', 'Created')
               } else {
                 logToFile('WARN', `initial save failed for slot ${SLOT_ID}, exitCode=${saveExit}`)
+                showToastVariant($, cacheName, LLAMA_SERVER_URL, 'error', 'Slot Cache', 'Initial save failed')
               }
             }
+          } else if (cacheName && slotRestored) {
+            logToFile('INFO', `session.idle: skipping restore, already restored this session`)
           }
           return
         }
@@ -220,8 +257,10 @@ export const SlotCachePlugin = async ({ directory, $, dispose }) => {
             )
             if (exitCode === 0) {
               logToFile('INFO', `saved slot ${SLOT_ID} on ${event.type}, exitCode=${exitCode}`)
+              showToastVariant($, cacheName, LLAMA_SERVER_URL, 'success', 'Slot Cache', `Saved on ${event.type.replace('session.', '')}`)
             } else {
               logToFile('WARN', `save on ${event.type} failed for slot ${SLOT_ID}, exitCode=${exitCode}`)
+              showToastVariant($, cacheName, LLAMA_SERVER_URL, 'error', 'Slot Cache', `${event.type.replace('session.', '')} save failed`)
             }
           }
         }
@@ -232,6 +271,7 @@ export const SlotCachePlugin = async ({ directory, $, dispose }) => {
 
     // Inject id_slot into chat requests to use the cached slot
     'chat.params': async (input, output) => {
+      lastChatParamsTime = Date.now()
       logToFile('INFO', `got chat.params {input}`)
       if (!slotApiAvailable) return
       try {
