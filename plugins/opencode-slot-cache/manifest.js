@@ -1,7 +1,6 @@
 // opencode plugin: llama.cpp slot cache manager
 //
 // Bridges OpenCode session lifecycle to llama.cpp server slot management.
-// - On session start (session.idle): restores cached slot KV, or saves a new one if none exists
 // - Saves slot KV cache on session.compacted / session.deleted events
 // - Periodically saves slot KV cache on idle intervals (configurable)
 // - Injects id_slot parameter into chat requests (when cache exists)
@@ -112,7 +111,6 @@ export const SlotCachePlugin = async ({ directory, $, dispose }) => {
   let slotApiAvailable = true
   let currentSessionId = null
   let cacheName = null
-  let slotRestored = false
   let lastChatParamsTime = 0
 
   function slotApiUnav() {
@@ -126,7 +124,25 @@ export const SlotCachePlugin = async ({ directory, $, dispose }) => {
     }
   }
 
-  function updateCacheName(sessionId) {
+  async function tryRestore(name) {
+    if (!slotApiAvailable || !name) return
+    try {
+      const { exitCode } = await pythonRun(
+        ['restore', LLAMA_SERVER_URL, String(SLOT_ID), name, SLOT_CACHE_DIR, '--model', MODEL_NAME],
+        'try restore'
+      )
+      if (exitCode === 0) {
+        logToFile('INFO', `restored slot ${SLOT_ID} from cache, exitCode=${exitCode}`)
+        showToastVariant($, name, LLAMA_SERVER_URL, 'success', 'Slot Cache', 'Restored')
+      } else {
+        logToFile('INFO', `no cache to restore for slot ${SLOT_ID}, exitCode=${exitCode}`)
+      }
+    } catch (e) {
+      logToFile('WARN', `restore error: ${e.message || e}`)
+    }
+  }
+
+  async function updateCacheName(sessionId) {
     if (sessionId && sessionId !== currentSessionId) {
       currentSessionId = sessionId
       cacheName = makeCacheName(sessionId)
@@ -176,7 +192,7 @@ export const SlotCachePlugin = async ({ directory, $, dispose }) => {
         clearInterval(idleTimerId)
         idleTimerId = null
       }
-      if (slotApiAvailable && cacheName) {
+      if (cacheName) {
         try {
           const { exitCode } = await pythonRun(
             ['save', LLAMA_SERVER_URL, String(SLOT_ID), cacheName, SLOT_CACHE_DIR, '--model', MODEL_NAME],
@@ -202,48 +218,15 @@ export const SlotCachePlugin = async ({ directory, $, dispose }) => {
     // Subscribe to session lifecycle events
     event: async ({ event }) => {
       if (!slotApiAvailable) return
-      try {
-        // Capture session ID at session start (session.idle)
-        if (event.type === 'session.idle') {
-          slotRestored = false
-          logToFile('INFO', `session.idle: resetting slotRestored for new session`)
-          const sid = event.properties?.sessionID
-          if (sid) {
-            updateCacheName(sid)
-          }
-          logToFile('INFO', `event: ${event.type}, sessionID=${sid?.slice(0,8)}`)
-          // Try to restore cached slot; if no cache exists, immediately save to create one
-          if (cacheName && !slotRestored) {
-            // Step 1: try restore
-            const { exitCode: restoreExit } = await pythonRun(
-              ['restore', LLAMA_SERVER_URL, String(SLOT_ID), cacheName, SLOT_CACHE_DIR, '--model', MODEL_NAME],
-              'startup restore'
-            )
-            if (restoreExit === 0) {
-              slotRestored = true
-              logToFile('INFO', `restored slot ${SLOT_ID} from cache`)
-              showToastVariant($, cacheName, LLAMA_SERVER_URL, 'success', 'Slot Cache', 'Restored')
-            } else {
-              // No cache yet — immediately save to create one
-              logToFile('INFO', `no cache to restore for slot ${SLOT_ID} (exit ${restoreExit}), saving now`)
-              const { exitCode: saveExit } = await pythonRun(
-                ['save', LLAMA_SERVER_URL, String(SLOT_ID), cacheName, SLOT_CACHE_DIR, '--model', MODEL_NAME],
-                'startup save'
-              )
-              if (saveExit === 0) {
-                logToFile('INFO', `saved slot ${SLOT_ID} (initial save)`)
-                showToastVariant($, cacheName, LLAMA_SERVER_URL, 'info', 'Slot Cache', 'Created')
-              } else {
-                logToFile('WARN', `initial save failed for slot ${SLOT_ID}, exitCode=${saveExit}`)
-                showToastVariant($, cacheName, LLAMA_SERVER_URL, 'error', 'Slot Cache', 'Initial save failed')
-              }
-            }
-          } else if (cacheName && slotRestored) {
-            logToFile('INFO', `session.idle: skipping restore, already restored this session`)
-          }
-          return
-        }
-        // Save on compact/delete
+     try {
+        // Initialize cache name on session creation; save on compact/delete
+        if (event.type === 'session.created' || event.type === 'session.create') {
+           const sid = event.properties?.sessionID || event.properties?.info?.sessionID
+           if (sid) {
+             updateCacheName(sid)
+             await tryRestore(cacheName)
+           }
+         }
         if (event.type === 'session.compacted' || event.type === 'session.deleted') {
           logToFile('INFO', `got {event.type}`)
           if (!cacheName) {
@@ -274,39 +257,16 @@ export const SlotCachePlugin = async ({ directory, $, dispose }) => {
       lastChatParamsTime = Date.now()
       logToFile('INFO', `got chat.params ${input}`)
       if (!slotApiAvailable) return
-      try {
-        // Extract sessionID from hook input
-        const sid = input?.sessionID
-        if (sid) updateCacheName(sid)
-        if (!cacheName) {
-          logToFile('INFO', 'chat.params: no cache name yet, skipping check (session may not be initialized)')
-          return
+      if (!cacheName) {
+        logToFile('INFO', 'chat.params: no cache name yet, skipping')
+        return
+      }
+      if(input && input.model) {
+        if (!input.model.extraBody) {
+          input.model.extraBody = {}
         }
-        const { exitCode } = await pythonRun(
-          ['check', LLAMA_SERVER_URL, String(SLOT_ID), cacheName, SLOT_CACHE_DIR, '--model', MODEL_NAME],
-          'check cache'
-        )
-        if (exitCode === 0){
-          if(input && input.model) {
-            if (!input.model.extraBody) {
-              input.model.extraBody = {}
-            }
-            input.model.extraBody.id_slot = SLOT_ID
-          }
-          logToFile('INFO', `cache check for slot ${SLOT_ID}, injected id_slot=${SLOT_ID}`)
-        } else if (exitCode === 1) {
-          // No cache yet — this is normal for a new session. Do NOT disable the plugin.
-          // A save operation will create the cache, and then it can be loaded.
-          logToFile('INFO', `no cache yet for slot ${SLOT_ID} (exit 1), normal for new session`)
-        } else if (exitCode === 2) {
-          // Server API is known incompatible
-          logToFile('WARN', `slots API unavailable for slot ${SLOT_ID} (exit 2)`)
-          slotApiUnav()
-        } else {
-          logToFile('WARN', `unexpected exit code ${exitCode} from check command`)
-        }
-      } catch (e) {
-        logToFile('ERROR', `chat.params check error: ${e.message || e}`)
+        input.model.extraBody.id_slot = SLOT_ID
+        logToFile('INFO', `injected id_slot=${SLOT_ID}`)
       }
     }
   }
