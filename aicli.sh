@@ -93,6 +93,7 @@ exec docker run --rm -it \
     -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
     -v $ROCM_PATH:/opt/rocm:ro \
     -v aicli-${w##-}-${LOGNAME}-${BDIR}-cocodb:/coco-db-files:rw \
+    --shm-size 1G \
     --ulimit memlock=-1:-1 \
     --ulimit stack=67108864:67108864 \
     --group-add=video \
