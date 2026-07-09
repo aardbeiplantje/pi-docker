@@ -280,6 +280,12 @@ if($ENV{BDIR}){
 if (@ARGV && $ARGV[0] eq "-pi") {
     # Remove the 'pi' command from arguments and pass rest to pi binary
     # Set HOME environment variable for node user
+    $ENV{PI_SKIP_VERSION_CHECK} //= 1;
+    $ENV{PI_TELEMETRY}          //= 0;
+    $ENV{EDITOR}                //= 'nano';
+    $ENV{PI_OFFLINE}            //= 1;
+    $ENV{PI_CODING_AGENT_DIR}   //= "/home/node/.pi/agent";
+    $ENV{PI_CODING_AGENT_SESSION_DIR} = "$workspace/.pi/sessions";
     shift @ARGV;
     exec("/home/node/.npm-global/bin/pi", @ARGV)
         or die "[ERROR] failed to exec pi: $!\n";

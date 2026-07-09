@@ -119,7 +119,7 @@ RUN opencode plugin @tarquinen/opencode-dcp@latest --global
 RUN chmod +x $HDIR/.npm-global/bin/*
 
 # pi.dev
-ENV PI_CODING_AGENT_DIR=$HDIR/.pi
+ENV PI_CODING_AGENT_DIR=$HDIR/.pi/agent
 ENV LEMONADE_URL=http://[::1]:13305
 RUN npm install -g --ignore-scripts @earendil-works/pi-coding-agent
 RUN npm install -g --ignore-scripts @earendil-works/pi-agent-core
@@ -168,8 +168,8 @@ COPY tui.json $OPENCODE_CONFIG_DIR/tui.json
 COPY aicli.pl /
 COPY mcp_servers /mcp
 COPY --chown=root:root cocoindex_plugins /cocoindex_plugins
-COPY pi_settings.json $HDIR/.pi/settings.json
-COPY pi_auth.json $HDIR/.pi/auth.json
+COPY pi_settings.json $HDIR/.pi/agent/settings.json
+COPY pi_auth.json $HDIR/.pi/agent/auth.json
 COPY --chown=node:node plugins /plugins
 COPY commands /commands
 COPY skills /skills
