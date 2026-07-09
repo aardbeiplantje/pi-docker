@@ -6,6 +6,6 @@
     "git:github.com/lemonade-sdk/lemonade-pi-plugin@main"
   ],
   "defaultProvider": "lemonade",
-  "defaultModel": "Gemma-4-26B-A4B-it-GGUF",
+  "defaultModel": "Qwen3.6-35B-A3B-ROCMFP4",
   "defaultThinkingLevel": "medium"
 }
