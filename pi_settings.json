@@ -2,7 +2,6 @@
   "lastChangelogVersion": "0.79.4",
   "theme": "dark",
   "packages": [
-    "npm:pi-llama-cpp",
-    "npm:pi-llama-server"
+    "npm:pi-llama-cpp"
   ]
 }
