@@ -19,10 +19,16 @@ variable "DOCKER_IMAGE_NAME" {
 variable "DOCKER_TAG" {
   default = "latest"
 }
+variable "PI_LLAMA_SHA" {
+  default = "df3893995b9a8fa4a77f36fd0bff5835345488f0"
+}
 target "_common" {
   context = "."
   dockerfile = "Dockerfile"
   platforms = ["linux/amd64"]
+  args = {
+    PI_LLAMA_SHA = "${PI_LLAMA_SHA}"
+  }
   networks = ["host"]
   buildkit = true
 }

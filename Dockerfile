@@ -1,7 +1,5 @@
 FROM node:26-trixie-slim AS base
 
-ARG PI_LLAMA_SHA=df3893995b9a8fa4a77f36fd0bff5835345488f0
-
 LABEL author="aardbeiplantje@gmail.com"
 LABEL description="Docker image for opencode - AI-powered CLI tool with secure non-root execution environment"
 LABEL version="0.1.0"
@@ -128,6 +126,7 @@ RUN npm install -g --ignore-scripts @earendil-works/pi-agent-core
 RUN npm install -g --ignore-scripts @earendil-works/pi-ai
 RUN npm install -g --ignore-scripts @earendil-works/pi-tui
 RUN pi install npm:fd
+ARG PI_LLAMA_SHA
 RUN pi install git:github.com/aardbeiplantje/pi-llama@${PI_LLAMA_SHA}
 RUN pi install git:github.com/aardbeiplantje/lemonade-pi-plugin@feature-llama.cpp-slot-id
 RUN pi install npm:pi-memctx
