@@ -3,9 +3,6 @@
   "theme": "dark",
   "packages": [
     "npm:pi-llama-cpp",
-    "git:github.com:aardbeiplantje/lemonade-pi-plugin@main"
-  ],
-  "defaultProvider": "lemonade",
-  "defaultModel": "Qwen3.6-35B-A3B-ROCMFP4",
-  "defaultThinkingLevel": "medium"
+    "npm:pi-llama-server"
+  ]
 }
