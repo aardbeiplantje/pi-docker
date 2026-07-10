@@ -2,6 +2,6 @@
   "lastChangelogVersion": "0.79.4",
   "theme": "dark",
   "packages": [
-    "npm:pi-llama-cpp"
+    git:github.com/huggingface/pi-llama
   ]
 }
