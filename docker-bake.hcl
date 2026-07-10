@@ -20,7 +20,10 @@ variable "DOCKER_TAG" {
   default = "latest"
 }
 variable "PI_LLAMA_SHA" {
-  default = "df3893995b9a8fa4a77f36fd0bff5835345488f0"
+  default = "feature/llama-slot-handling"
+}
+variable "CACHEBUST" {
+  default = "1"
 }
 target "_common" {
   context = "."
@@ -28,6 +31,7 @@ target "_common" {
   platforms = ["linux/amd64"]
   args = {
     PI_LLAMA_SHA = "${PI_LLAMA_SHA}"
+    CACHEBUST    = "${CACHEBUST}"
   }
   networks = ["host"]
   buildkit = true

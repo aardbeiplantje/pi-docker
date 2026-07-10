@@ -114,6 +114,8 @@ RUN npm install -g --ignore-scripts @earendil-works/pi-ai
 RUN npm install -g --ignore-scripts @earendil-works/pi-tui
 RUN pi install npm:fd
 ARG PI_LLAMA_SHA
+ARG CACHEBUST=1
+RUN echo "pi-llama cachebust: ${CACHEBUST}"
 RUN pi install git:github.com/aardbeiplantje/pi-llama@${PI_LLAMA_SHA}
 RUN pi install git:github.com/aardbeiplantje/lemonade-pi-plugin@feature-llama.cpp-slot-id
 RUN pi install npm:pi-memctx
