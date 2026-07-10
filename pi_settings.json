@@ -2,6 +2,7 @@
   "lastChangelogVersion": "0.79.4",
   "theme": "dark",
   "packages": [
+    "npm:pi-llama-cpp",
     "git:github.com:aardbeiplantje/lemonade-pi-plugin@main"
   ],
   "defaultProvider": "lemonade",
