@@ -1,7 +1,7 @@
 FROM node:26-trixie-slim AS base
 
 LABEL author="aardbeiplantje@gmail.com"
-LABEL description="Docker image for opencode - AI-powered CLI tool with secure non-root execution environment"
+LABEL description="Docker image for pi.dev - AI-powered CLI tool with secure non-root execution environment"
 LABEL version="0.1.0"
 
 # Install basic development tools and iptables/ipset
@@ -98,29 +98,16 @@ USER node
 
 WORKDIR /home/node
 ENV HDIR=/home/node
-ENV PATH=$HDIR/.opencode/bin:$HDIR/.local/bin:$PATH
-ENV OPENCODE_CONFIG_DIR=$HDIR/.config/opencode
-ENV OPENCODE_CONFIG=$OPENCODE_CONFIG_DIR/opencode.json
 
-# opencode
+# pi.dev
+ENV PI_CODING_AGENT_DIR=$HDIR/.pi/agent
+ENV LEMONADE_URL=http://[::1]:13305
 ENV NPM_CONFIG_PREFIX=$HDIR/.npm-global
 ENV PATH=$PATH:$HDIR/.npm-global/bin
 ENV BUN_INSTALL=$HDIR/.bun
 RUN npm set prefix $HDIR
 RUN npm install -g npm
 RUN npm install -g bun
-RUN npm install -g @ai-sdk/openai-compatible
-RUN npm install -g opencode-ai
-RUN npm install -g opencode-working-memory
-RUN npm install -g @modelcontextprotocol/sdk zod
-RUN npm install -g opencode-plugin-openspec
-RUN npm install -g opencode-mem
-RUN opencode plugin @tarquinen/opencode-dcp@latest --global
-RUN chmod +x $HDIR/.npm-global/bin/*
-
-# pi.dev
-ENV PI_CODING_AGENT_DIR=$HDIR/.pi/agent
-ENV LEMONADE_URL=http://[::1]:13305
 RUN npm install -g --ignore-scripts @earendil-works/pi-coding-agent
 RUN npm install -g --ignore-scripts @earendil-works/pi-agent-core
 RUN npm install -g --ignore-scripts @earendil-works/pi-ai
@@ -164,17 +151,9 @@ RUN rm -rf /tmp/* /tmp/.*.so /workspace/.local
 RUN mkdir -p /workspace
 RUN mkdir -p /workdir
 RUN mkdir -p /opt/rocm
-COPY --chown=node:node opencode.json $OPENCODE_CONFIG
-COPY tui.json $OPENCODE_CONFIG_DIR/tui.json
 COPY aicli.pl /
-COPY mcp_servers /mcp
-COPY --chown=root:root cocoindex_plugins /cocoindex_plugins
 COPY pi_settings.json $HDIR/.pi/agent/settings.json
 COPY pi_auth.json $HDIR/.pi/agent/auth.json
-COPY --chown=node:node plugins /plugins
-COPY commands /commands
-COPY skills /skills
-RUN ln -s /workspace/.opencode-mem /home/node/.opencode-mem
 USER root
 ENV TMPDIR=/pip/tmp
 ENV XDG_CACHE_HOME=/pip
@@ -184,9 +163,7 @@ ENV COCOINDEX_CODE_DIR=$HDIR/.cocoindex
 ENV COCOINDEX_CODE_DB_PATH_MAPPING=/workdir=/coco-db-files
 ENV COCOINDEX_DISABLE_USAGE_TRACKING=1
 RUN mkdir -p /coco-db-files && chown node:node /coco-db-files
-RUN mkdir -p /usr/local/lib/python3.13/dist-packages/cocoindex_plugins && cp /cocoindex_plugins/__init__.py /usr/local/lib/python3.13/dist-packages/cocoindex_plugins/ && cp /cocoindex_plugins/register_providers.py /usr/local/lib/python3.13/dist-packages/cocoindex_plugins/ && cp -r /cocoindex_plugins/llamacpp_provider /usr/local/lib/python3.13/dist-packages/cocoindex_plugins/ && cp /cocoindex_plugins/sitecustomize.py /usr/lib/python3.13/ && chown -R root:root /usr/local/lib/python3.13/dist-packages/cocoindex*
 RUN ln -s /workspace/.cocoindex /home/node/.cocoindex
-ENV OPENCODE_CONFIG_DIR=/workspace
 ENV T_UID=1000
 ENV EDITOR=nano
 ENV VISUAL=nano

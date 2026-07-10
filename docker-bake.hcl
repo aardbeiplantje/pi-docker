@@ -14,7 +14,7 @@ variable "DOCKER_REPOSITORY" {
   default = "ai"
 }
 variable "DOCKER_IMAGE_NAME" {
-  default = "opencode"
+  default = "aicli"
 }
 variable "DOCKER_TAG" {
   default = "latest"
