@@ -129,7 +129,8 @@ RUN pi install npm:@0xkobold/pi-codebase-wiki
 RUN pi install npm:pi-mcp-extension
 RUN pi install npm:@tintinweb/pi-subagents
 RUN pi install npm:@termdraw/pi
-RUN pi install npm:pi-searxng
+RUN pi install npm:pi-searxng-search
+RUN pi install npm:pi-smart-fetch
 
 # cocoindex
 USER root
