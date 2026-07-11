@@ -139,7 +139,7 @@ RUN \
     python3 -m pip install --prefer-binary --upgrade \
         cocoindex-code mcp httpx
 COPY --chown=root:root cocoindex_plugins /lib/python/cocoindex_plugins
-ENV PYTHONPATH=/lib/python
+ENV PYTHONPATH=/lib/python/cocoindex_plugins
 RUN python3 /lib/python/cocoindex_plugins/register_providers.py
 
 FROM base AS runtime
