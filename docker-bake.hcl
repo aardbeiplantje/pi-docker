@@ -20,7 +20,7 @@ variable "DOCKER_TAG" {
   default = "latest"
 }
 variable "PI_LLAMA_SHA" {
-  default = "feature/llama-slot-handling"
+  default = "main"
 }
 variable "CACHEBUST" {
   default = "1"
