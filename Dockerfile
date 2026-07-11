@@ -170,6 +170,10 @@ ENV COCOINDEX_CODE_DB_PATH_MAPPING=/workdir=/coco-db-files
 ENV COCOINDEX_DISABLE_USAGE_TRACKING=1
 COPY mcp_servers /mcp
 COPY ccc_granular /mcp/ccc_granular
+RUN \
+    --mount=target=/pip,type=cache,sharing=locked \
+    python3 -m pip install --prefer-binary --upgrade \
+        -r /mcp/ccc_granular/requirements.txt
 RUN mkdir -p /coco-db-files && chown node:node /coco-db-files
 RUN ln -s /workspace/.cocoindex /home/node/.cocoindex
 ENV T_UID=1000
