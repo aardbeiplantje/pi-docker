@@ -113,4 +113,4 @@ exec docker run --rm -it \
     -v aicli-${w##-}-${LOGNAME}-workspace:/workspace \
     -v "${PWD}":/workdir/${BDIR} \
         "$DOCKER_IMAGE" \
-            "$*"
+            $*
