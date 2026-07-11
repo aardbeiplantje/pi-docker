@@ -2,8 +2,8 @@
   "mcpServers": {
     "ccc_granular": {
       "transport": "stdio",
-      "lifecycle": "lazy",
-      "command": "python",
+      "lifecycle": "eager",
+      "command": "python3",
       "args": [
         "/mcp/ccc_granular/server.py"
       ],
