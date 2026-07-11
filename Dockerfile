@@ -164,7 +164,10 @@ ENV PIP_ROOT_USER_ACTION=ignore
 ENV COCOINDEX_CODE_DIR=$HDIR/.cocoindex
 ENV COCOINDEX_CODE_DB_PATH_MAPPING=/workdir=/coco-db-files
 ENV COCOINDEX_DISABLE_USAGE_TRACKING=1
+COPY mcp_servers /mcp
+COPY --chown=root:root cocoindex_plugins /cocoindex_plugins
 RUN mkdir -p /coco-db-files && chown node:node /coco-db-files
+RUN mkdir -p /usr/local/lib/python3.13/dist-packages/cocoindex_plugins && cp /cocoindex_plugins/__init__.py /usr/local/lib/python3.13/dist-packages/cocoindex_plugins/ && cp /cocoindex_plugins/register_providers.py /usr/local/lib/python3.13/dist-packages/cocoindex_plugins/ && cp -r /cocoindex_plugins/llamacpp_provider /usr/local/lib/python3.13/dist-packages/cocoindex_plugins/ && cp /cocoindex_plugins/sitecustomize.py /usr/lib/python3.13/ && chown -R root:root /usr/local/lib/python3.13/dist-packages/cocoindex*
 RUN ln -s /workspace/.cocoindex /home/node/.cocoindex
 ENV T_UID=1000
 ENV EDITOR=nano

@@ -1,0 +1,11 @@
+{
+  "servers": {
+    "ccc_granular": {
+      "command": "python",
+      "args": [
+        "/mcp/ccc_granular/server.py"
+      ],
+      "env": {}
+    }
+  }
+}
