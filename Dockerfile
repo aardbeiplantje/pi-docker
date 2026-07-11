@@ -158,6 +158,8 @@ COPY pi.pl /
 COPY pi_settings.json $HDIR/.pi/agent/settings.json
 COPY pi_auth.json $HDIR/.pi/agent/auth.json
 COPY mcp.json $HDIR/.pi/agent/mcp.json
+COPY skills $HDIR/.pi/agent/
+COPY themes $HDIR/.pi/agent/
 COPY mcp /mcp
 USER root
 RUN \
