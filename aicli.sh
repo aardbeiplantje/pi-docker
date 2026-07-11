@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOCKER_IMAGE=${DOCKER_IMAGE:-local/ai/opencode:latest}
+DOCKER_IMAGE=${DOCKER_IMAGE:-local/ai/pi:latest}
 HERE=$(readlink -f "${PWD}")
 BDIR=${HERE##*/}
 
