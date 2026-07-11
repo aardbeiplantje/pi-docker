@@ -249,6 +249,7 @@ die "[ERROR] running as root EGID/RGID is not allowed\n"
 $ENV{TMPDIR}                           = "/pip/tmp";
 $ENV{PIP_BREAK_SYSTEM_PACKAGES}        = 1;
 $ENV{PIP_ROOT_USER_ACTION}             = "ignore";
+$ENV{PYTHONDONTWRITEBYTECODE}          = 1;
 $ENV{COCOINDEX_CODE_DIR}               = "$ENV{HDIR}/.cocoindex";
 $ENV{COCOINDEX_CODE_DB_PATH_MAPPING}   = "/workdir=/coco-db-files";
 $ENV{COCOINDEX_DISABLE_USAGE_TRACKING} = 1;
