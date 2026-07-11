@@ -7,6 +7,7 @@
     "npm:pi-mcp-extension",
     "npm:@tintinweb/pi-subagents",
     "npm:pi-searxng-search",
-    "npm:pi-smart-fetch"
+    "npm:pi-smart-fetch",
+    "npm:@ayulab/pi-rewind"
   ]
 }
