@@ -1,5 +1,6 @@
 {
   "lastChangelogVersion": "0.79.4",
+  "enableSkillCommands": true,
   "theme": "dark",
   "packages": [
     "git:github.com/aardbeiplantje/pi-llama@feature/llama-slot-handling",

@@ -234,7 +234,7 @@ The configuration file lives at `/workspace/pi.json` inside the image.
     "ccc-granular": {
       "type": "local",
       "enabled": true,
-      "command": ["python3", "/mcp/ccc_granular/server.py"]
+      "command": ["python3", "/mcp/ccc/server.py"]
     },
     "cocoindex-code": {
       "type": "local",

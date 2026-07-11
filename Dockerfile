@@ -134,7 +134,7 @@ RUN mkdir -p $TMPDIR && chmod +s $TMPDIR
 RUN \
     --mount=target=/pip,type=cache,sharing=locked \
     python3 -m pip install --prefer-binary --upgrade \
-        cocoindex-code mcp httpx
+        cocoindex-code
 COPY --chown=root:root cocoindex_plugins /lib/python/cocoindex_plugins
 COPY --chown=root:root cocoindex_plugins/sitecustomize.py /lib/python/sitecustomize.py
 ENV PYTHONPATH=/lib/python
@@ -158,13 +158,14 @@ COPY pi.pl /
 COPY pi_settings.json $HDIR/.pi/agent/settings.json
 COPY pi_auth.json $HDIR/.pi/agent/auth.json
 COPY mcp.json $HDIR/.pi/agent/mcp.json
+COPY mcp /mcp
 USER root
-RUN mkdir -p /mcp
-COPY ccc_granular /mcp/ccc_granular
 RUN \
     --mount=target=/pip,type=cache,sharing=locked \
-    python3 -m pip install --prefer-binary --upgrade \
-        -r /mcp/ccc_granular/requirements.txt
+    for r in /mcp/*/requirements.txt; do \
+        python3 -m pip install --prefer-binary --upgrade \
+            -r $r; \
+    done
 RUN mkdir -p /coco-db-files && chown node:node /coco-db-files
 RUN ln -s /workspace/.cocoindex /home/node/.cocoindex
 ENTRYPOINT ["/usr/bin/perl", "/pi.pl"]
