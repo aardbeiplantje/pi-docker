@@ -1,18 +1,18 @@
-# Opencode Agent Instructions (AGENTS.md)
+# Pi.dev Agent Instructions (AGENTS.md)
 
-This repository packages **opencode** (AI-powered CLI tool) as a Docker image with
+This repository packages **pi.dev** (AI-powered CLI tool) as a Docker image with
 Docker-in-Docker support, non-root execution, and configurable agent settings.
 
 ## Key Files
 
 | File             | Purpose                                                         |
 |------------------|-----------------------------------------------------------------|
-| `Dockerfile`     | Multi-stage build: installs Node.js 26, opencode-ai CLI, docker-ce stack (~4 stages) |
-| `aicli.pl`       | Perl entry point - drops privileges (root → UID), sets up env, starts dockerd if DIND=1, then execs opencode |
+| `Dockerfile`     | Multi-stage build: installs Node.js 26, pi.dev CLI, docker-ce stack (~4 stages) |
+| `aicli.pl`       | Perl entry point - drops privileges (root → UID), sets up env, starts dockerd if DIND=1, then execs pi.dev |
 | `aicli.sh`       | Docker run wrapper - shares host sockets, sets env vars, launches container |
-| `opencode`       | Thin wrapper around `aicli.sh` with `-opencode` flag |
+| `pi`             | Thin wrapper around `aicli.sh` with `-pi` flag |
 | `docker-bake.hcl`| Docker BuildKit bake config for building/pushing images to a registry |
-| `config.json`    | Opencode agent config (model, tools, permissions, MCP servers)  |
+| `pi.json`        | Pi.dev agent config (model, tools, permissions, MCP servers)  |
 
 ## Project Structure
 
@@ -25,19 +25,19 @@ Docker-in-Docker support, non-root execution, and configurable agent settings.
 ```
 aicli.sh (Docker run with shared volumes: docker.sock, SSH agent, git config, ROCm)
   → aicli.pl drops privileges (root→node), sets up env, starts dockerd if DIND=1
-    → execs `/home/node/.npm-global/bin/opencode` (the actual CLI tool)
+    → execs `/home/node/.npm-global/bin/pi` (the actual CLI tool)
 ```
 
 Runtime user: `node:1000`, but entrypoint may switch to configured UID via the `UID`
 environment variable.
 
-## Opencode Config (`config.json`)
+## Pi.dev Config (`pi.json`)
 
-The config lives at `/home/node/config.json` inside the image. Edit rules:
+The config lives at `/home/node/pi.json` inside the image. Edit rules:
 
-- Use `$schema: "https://opencode.ai/config.json"` for validation
+- Use `$schema: "https://pi.dev/config.json"` for validation
 - Variables resolve via `{env:LLAMA_MODEL}` style substitution at runtime
-- After saving, restart opencode (config is loaded once at startup)
+- After saving, restart pi.dev (config is loaded once at startup)
 
 ## Docker / In-Docker
 

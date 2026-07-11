@@ -1,12 +1,12 @@
-# opencode
+# pi.dev
 
 AI-powered CLI tool packaged as a Docker image with Docker-in-Docker (DIND) support for managing containers from within code sessions with secure non-root execution.
 
 ## 🎯 Overview
 
-**opencode** is a Docker-based development environment that provides:
+**pi.dev** is a Docker-based development environment that provides:
 - **Docker-in-Docker (DIND)** — Start a local dockerd with `DIND=1` to manage containers from within your session
-- **AI-powered CLI** — Integrated opencode agent for code sessions with local LLM inference
+- **AI-powered CLI** — Integrated pi.dev agent for code sessions with local LLM inference
 - **GPU acceleration** — NVIDIA CUDA and AMD ROCm support
 - **Secure execution** — Automatic privilege dropping (root → non-root user)
 - **Host context sharing** — Docker socket, SSH agent, git config, X11 display
@@ -17,18 +17,18 @@ AI-powered CLI tool packaged as a Docker image with Docker-in-Docker (DIND) supp
 
 | Component | Purpose |
 |----------|--------|
-| **Dockerfile** | Multi-stage build (~4 stages): installs Node.js 26, opencode-ai CLI, docker-ce stack |
-| **aicli.pl** | Perl entry point - drops privileges, sets up environment, starts dockerd if DIND=1, then execs opencode |
+| **Dockerfile** | Multi-stage build (~4 stages): installs Node.js 26, pi.dev CLI, docker-ce stack |
+| **aicli.pl** | Perl entry point - drops privileges, sets up environment, starts dockerd if DIND=1, then execs pi.dev |
 | **aicli.sh** | Docker run wrapper - shares host sockets, sets env vars, launches container |
-| **opencode** | Thin wrapper around `aicli.sh` with `-opencode` flag |
-| **opencode.json** | Opencode agent configuration (model, tools, permissions, MCP servers) |
+| **pi** | Thin wrapper around `aicli.sh` with `-pi` flag |
+| **pi.json** | Pi.dev agent configuration (model, tools, permissions, MCP servers) |
 
 ### Runtime Flow
 
 ```
 aicli.sh (Docker run with shared volumes: docker.sock, SSH agent, git config, ROCm)
   → aicli.pl drops privileges (root→node), sets up env, starts dockerd if DIND=1
-    → execs `/home/node/.npm-global/bin/opencode` (the actual CLI tool)
+    → execs `/home/node/.npm-global/bin/pi` (the actual CLI tool)
 ```
 
 Runtime user: `node:1000`, but entrypoint may switch to configured UID via the `UID`
@@ -44,11 +44,11 @@ environment variable.
 # Basic usage with Docker-in-Docker
 bash aicli.sh
 
-# Run opencode CLI specifically
-bash aicli.sh -opencode
+# Run pi.dev CLI specifically
+bash aicli.sh -pi
 
 # Run pi-coding-agent
-bash aicli.sh -pi
+bash aicli.sh -pi-coding-agent
 ```
 
 ---
@@ -78,7 +78,7 @@ export LLAMA_MODEL="qwen3.5:0.8b"
 export LLAMA_SERVER_API_KEY="your-key"
 export ROCM_PATH="/opt/rocm"
 export DISPLAY=:0
-bash aicli.sh -opencode
+bash aicli.sh -pi
 ```
 
 ### Example: Non-DIND mode (existing Docker daemon)
@@ -86,7 +86,7 @@ bash aicli.sh -opencode
 ```bash
 export DOCKER_HOST="unix:///var/run/docker.sock"
 export DIND=0
-bash aicli.sh -opencode
+bash aicli.sh -pi
 ```
 
 ---
@@ -155,7 +155,7 @@ docker buildx bake -f docker-bake.hcl --set "*.CACHEBUST=2"
 docker buildx bake -f docker-bake.hcl release \
   --set "*.DOCKER_REGISTRY=ghcr.io" \
   --set "*.DOCKER_REPOSITORY=my-org" \
-  --set "*.DOCKER_IMAGE_NAME=opencode" \
+  --set "*.DOCKER_IMAGE_NAME=pi-dev" \
   --set "*.DOCKER_TAG=1.0"
 
 # Custom image name
@@ -179,15 +179,15 @@ docker buildx bake -f docker-bake.hcl release \
 
 ---
 
-## 🔧 Configuration (opencode.json)
+## 🔧 Configuration (pi.json)
 
-The configuration file lives at `/workspace/opencode.json` inside the image.
+The configuration file lives at `/workspace/pi.json` inside the image.
 
 ### Configuration Schema
 
 ```json
 {
-  "$schema": "https://opencode.ai/config.json",
+  "$schema": "https://pi.dev/config.json",
   "provider": {
     "llama.cpp": {
       "npm": "@ai-sdk/openai-compatible",
@@ -216,11 +216,11 @@ The configuration file lives at `/workspace/opencode.json` inside the image.
     "bash": "allow"
   },
   "plugin": [
-    "opencode-working-memory",
-    "opencode-plugin-openspec",
-    "opencode-ralph-loop",
-    "opencode-mem",
-    "/plugins/opencode-slot-cache/manifest.js"
+    "pi-working-memory",
+    "pi-plugin-openspec",
+    "pi-ralph-loop",
+    "pi-mem",
+    "/plugins/pi-slot-cache/manifest.js"
   ],
   "compaction": {
     "enabled": true,
@@ -248,7 +248,7 @@ The configuration file lives at `/workspace/opencode.json` inside the image.
 ### Configuration Rules
 
 - **Variable resolution**: Use `{env:VAR_NAME}` style substitution at runtime
-- **Validation**: Uses `$schema` for opencode.ai schema validation
+- **Validation**: Uses `$schema` for pi.dev schema validation
 - **Persistence**: Config is loaded once at startup; changes require restart
 
 ### Environment Variables in Config
@@ -287,7 +287,7 @@ bash aicli.sh
 # With custom settings
 export LLAMA_MODEL="qwen3.5:0.8b"
 export LLAMA_SERVER_API_KEY="your-key"
-bash aicli.sh -opencode
+bash aicli.sh -pi
 ```
 
 ### 3. Run Without DIND (existing Docker daemon)
@@ -295,7 +295,7 @@ bash aicli.sh -opencode
 ```bash
 export DOCKER_HOST="unix:///var/run/docker.sock"
 export DIND=0
-bash aicli.sh -opencode
+bash aicli.sh -pi
 ```
 
 ### 4. Run with GPU
@@ -304,7 +304,7 @@ bash aicli.sh -opencode
 export LLAMA_MODEL="qwen3.5:0.8b"
 export ROCM_PATH="/opt/rocm"
 export DISPLAY=:0
-bash aicli.sh -opencode
+bash aicli.sh -pi
 ```
 
 ---
@@ -313,12 +313,12 @@ bash aicli.sh -opencode
 
 | Aspect | Status | Notes |
 |--------|--------|-------|
-| Privilege dropping | ✅ | Root → UID 1000 |
+| Privilege dropping | ✅ | Root → UID 1000 (user `node`) |
 | Docker socket mounting | ⚠️ | Requires `--privileged=true` or host socket |
 | GPU passthrough | ✅ | Requires kernel permissions |
 | SSH agent sharing | ⚠️ | Script warns "dangerous" |
 | Environment variables | ✅ | No hardcoded secrets |
-| Config validation | ✅ | Uses `$schema` for opencode.ai |
+| Config validation | ✅ | Uses `$schema` for pi.dev |
 | Memory limits | ✅ | Stack: 64MB, Memlock: unlimited |
 
 ### Security Best Practices
@@ -333,22 +333,22 @@ bash aicli.sh -opencode
 ## 📁 Project Structure
 
 ```
-/workdir/opencode.git/
+/workdir/pi.dev.git/
 ├── Dockerfile           # Multi-stage build (~4 stages)
 ├── aicli.pl            # Perl entrypoint - main logic
 │   - Drop privileges (root → UID)
 │   - Setup environment
 │   - Start dockerd if DIND=1
-│   - Execute opencode CLI
+│   - Execute pi.dev CLI
 ├── aicli.sh            # Docker run wrapper
 │   - Share host sockets (docker.sock, SSH agent, git config)
 │   - Set environment variables
 │   - Launch container
-├── opencode            # Thin wrapper around aicli.sh with -opencode flag
-├── opencode.json       # Agent configuration
+├── pi                  # Thin wrapper around aicli.sh with -pi flag
+├── pi.json             # Agent configuration
 ├── docker-bake.hcl     # Build targets and configuration
-├── plugins/            # Custom opencode plugins
-│   └── opencode-slot-cache/
+├── plugins/            # Custom pi.dev plugins
+│   └── pi-slot-cache/
 ├── mcp_servers/        # MCP server scripts
 │   ├── ccc_granular/
 │   ├── llama-slot-cache/
@@ -358,7 +358,7 @@ bash aicli.sh -opencode
 │   └── llamacpp_provider/
 ├── skills/            # Task-specific skills (currently empty)
 ├── commands/          # CLI commands
-│   └── purge-opencode-archived-sessions/
+│   └── purge-pi-dev-archived-sessions/
 ├── pi_auth.json       # PI authentication configuration
 ├── pi_settings.json   # PI configuration
 ├── tui.json           # TUI configuration
@@ -408,7 +408,7 @@ This is a community-maintained project. Feel free to:
 - Review dockerd logs in `/workspace/docker/*.log`
 
 #### Config not loading
-- Ensure `opencode.json` uses `$schema` for validation
+- Ensure `pi.json` uses `$schema` for validation
 - Restart the container after config changes
 - Check for environment variable substitution errors
 
@@ -416,11 +416,11 @@ This is a community-maintained project. Feel free to:
 
 ## 📚 References
 
-- [opencode.ai Documentation](https://opencode.ai/)
+- [pi.dev Documentation](https://pi.dev/)
 - [Docker-in-Docker Guide](https://docs.docker.com/engine/)
 - [llama.cpp Documentation](https://github.com/ggerganov/llama.cpp)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 
 ---
 
-*Last updated: 2026-07-09*
+*Last updated: 2026-07-11*
