@@ -138,8 +138,9 @@ RUN \
     --mount=target=/pip,type=cache,sharing=locked \
     python3 -m pip install --prefer-binary --upgrade \
         cocoindex-code mcp httpx
-COPY --chown=root:root cocoindex_plugins /cocoindex_plugins
-RUN mkdir -p /usr/local/lib/python3.13/dist-packages/cocoindex_plugins && cp /cocoindex_plugins/__init__.py /usr/local/lib/python3.13/dist-packages/cocoindex_plugins/ && cp /cocoindex_plugins/register_providers.py /usr/local/lib/python3.13/dist-packages/cocoindex_plugins/ && cp -r /cocoindex_plugins/llamacpp_provider /usr/local/lib/python3.13/dist-packages/cocoindex_plugins/ && cp /cocoindex_plugins/sitecustomize.py /usr/lib/python3.13/ && chown -R root:root /usr/local/lib/python3.13/dist-packages/cocoindex*
+COPY --chown=root:root cocoindex_plugins /lib/python/cocoindex_plugins
+ENV PYTHONPATH=/lib/python
+RUN python3 /lib/python/cocoindex_plugins/register_providers.py
 
 FROM base AS runtime
 USER root

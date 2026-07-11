@@ -294,8 +294,6 @@ if (@ARGV && $ARGV[0] eq "-pi") {
     exec("/home/node/.npm-global/bin/pi", @ARGV)
         or die "[ERROR] failed to exec pi: $!\n";
 }
-# Register custom LiteLLM providers (llamacpp embedding support)
-system("python3 /cocoindex_plugins/register_providers.py");
 # Otherwise, run opencode CLI with all provided arguments
 # Set HOME environment variable for node user
 $ENV{OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT} = "true";
