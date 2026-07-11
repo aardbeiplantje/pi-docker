@@ -4,6 +4,7 @@
   "theme": "dark",
   "packages": [
     "git:github.com/aardbeiplantje/pi-llama@feature/llama-slot-handling",
-    "npm:pi-mcp-extension"
+    "npm:pi-mcp-extension",
+    "npm:@tintinweb/pi-subagents"
   ]
 }

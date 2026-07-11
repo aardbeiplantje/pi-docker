@@ -121,6 +121,7 @@ RUN pi install git:github.com/aardbeiplantje/lemonade-pi-plugin@feature-llama.cp
 RUN pi install npm:pi-memctx
 RUN pi install npm:@0xkobold/pi-codebase-wiki
 RUN pi install npm:pi-mcp-extension
+RUN pi install npm:@tintinweb/pi-subagents
 RUN pi install npm:@termdraw/pi
 
 # cocoindex
