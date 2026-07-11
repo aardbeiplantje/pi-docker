@@ -169,7 +169,7 @@ ENV PIP_ROOT_USER_ACTION=ignore
 ENV COCOINDEX_CODE_DIR=$HDIR/.cocoindex
 ENV COCOINDEX_CODE_DB_PATH_MAPPING=/workdir=/coco-db-files
 ENV COCOINDEX_DISABLE_USAGE_TRACKING=1
-COPY mcp_servers /mcp
+RUN mkdir -p /mcp
 COPY ccc_granular /mcp/ccc_granular
 RUN \
     --mount=target=/pip,type=cache,sharing=locked \
