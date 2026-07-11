@@ -6,8 +6,6 @@ BDIR=${HERE##*/}
 
 extra_opts=
 
-w=${1:--opencode}
-shift
 echo "running $w"
 
 # share ssh keys (dangerous)
@@ -59,6 +57,7 @@ if [ "${DIND:-0}" = "1" ]; then
     extra_opts="$extra_opts -e DIND --privileged=true"
 fi
 
+w=pi
 ROCM_PATH=${ROCM_PATH:-/opt/rocm}
 ROCM_PATH=$(readlink -f "$ROCM_PATH")
 exec docker run --rm -it \
@@ -114,4 +113,4 @@ exec docker run --rm -it \
     -v aicli-${w##-}-${LOGNAME}-workspace:/workspace \
     -v "${PWD}":/workdir/${BDIR} \
         "$DOCKER_IMAGE" \
-            $w $*
+            "$*"

@@ -18,7 +18,7 @@ AI-powered CLI tool packaged as a Docker image with Docker-in-Docker (DIND) supp
 | Component | Purpose |
 |----------|--------|
 | **Dockerfile** | Multi-stage build (~4 stages): installs Node.js 26, pi.dev CLI, docker-ce stack |
-| **aicli.pl** | Perl entry point - drops privileges, sets up environment, starts dockerd if DIND=1, then execs pi.dev |
+| **pi.pl** | Perl entry point - drops privileges, sets up environment, starts dockerd if DIND=1, then execs pi.dev |
 | **aicli.sh** | Docker run wrapper - shares host sockets, sets env vars, launches container |
 | **pi** | Thin wrapper around `aicli.sh` with `-pi` flag |
 | **pi.json** | Pi.dev agent configuration (model, tools, permissions, MCP servers) |
@@ -27,7 +27,7 @@ AI-powered CLI tool packaged as a Docker image with Docker-in-Docker (DIND) supp
 
 ```
 aicli.sh (Docker run with shared volumes: docker.sock, SSH agent, git config, ROCm)
-  → aicli.pl drops privileges (root→node), sets up env, starts dockerd if DIND=1
+  → pi.pl drops privileges (root→node), sets up env, starts dockerd if DIND=1
     → execs `/home/node/.npm-global/bin/pi` (the actual CLI tool)
 ```
 
@@ -335,7 +335,7 @@ bash aicli.sh -pi
 ```
 /workdir/pi.dev.git/
 ├── Dockerfile           # Multi-stage build (~4 stages)
-├── aicli.pl            # Perl entrypoint - main logic
+├── pi.pl            # Perl entrypoint - main logic
 │   - Drop privileges (root → UID)
 │   - Setup environment
 │   - Start dockerd if DIND=1

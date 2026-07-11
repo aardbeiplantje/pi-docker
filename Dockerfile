@@ -157,7 +157,7 @@ RUN rm -rf /tmp/* /tmp/.*.so /workspace/.local
 RUN mkdir -p /workspace
 RUN mkdir -p /workdir
 RUN mkdir -p /opt/rocm
-COPY aicli.pl /
+COPY pi.pl /
 COPY pi_settings.json $HDIR/.pi/agent/settings.json
 COPY pi_auth.json $HDIR/.pi/agent/auth.json
 COPY mcp.json $HDIR/.pi/agent/mcp.json
@@ -180,4 +180,4 @@ RUN ln -s /workspace/.cocoindex /home/node/.cocoindex
 ENV T_UID=1000
 ENV EDITOR=nano
 ENV VISUAL=nano
-ENTRYPOINT ["/usr/bin/perl", "/aicli.pl"]
+ENTRYPOINT ["/usr/bin/perl", "/pi.pl"]

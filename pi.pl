@@ -12,7 +12,7 @@ use strict; use warnings;
     $bd =~ s/[^a-zA-Z0-9_-]/_/g;
     my $ln = $ENV{LOGNAME} // "node";
     $ln =~ s/[^a-zA-Z0-9_-]/_/g;
-    $0 = "opencode:$ln:$bd";
+    $0 = "pi:$ln:$bd";
 }
 
 use File::Path qw(make_path rmtree);
@@ -101,7 +101,7 @@ if(length($ENV{ROCM_PATH}//"")){
 }
 
 # setup /workspace/ subdirs
-foreach my $d ('.opencode', '.local', '.config', '.cache', '.pi', '.opencode-mem', '.cocoindex'){
+foreach my $d ('.local', '.config', '.cache', '.pi', '.cocoindex'){
     my $sd = "$workspace/$d";
     if(!-d $sd){
         mkdir($sd)
@@ -110,20 +110,6 @@ foreach my $d ('.opencode', '.local', '.config', '.cache', '.pi', '.opencode-mem
     chown($UID, $GID, $sd)
         or die "[ERROR] changing ownership of $sd to $UID:$GID: $!\n";
 }
-
-my $skills_src = "/skills";
-my $skills_dir = "$workspace/.opencode/skills";
-unlink $skills_dir if -l $skills_dir;
-rmtree $skills_dir if -d $skills_dir;
-symlink($skills_src, $skills_dir)
-    or die "Error symlink $skills_dir to -> $skills_src: $!\n";
-
-my $commands_src = "/commands";
-my $commands_dir = "$workspace/.opencode/commands";
-unlink $commands_dir if -l $commands_dir;
-rmtree $commands_dir if -d $commands_dir;
-symlink($commands_src, $commands_dir)
-    or die "Error symlink $commands_dir to -> $commands_src: $!\n";
 
 # check DOCKER_HOST
 if(($ENV{DIND}//0) == 1 and !length($ENV{DOCKER_HOST}//"")){
@@ -276,27 +262,16 @@ if($ENV{BDIR}){
         or die "[ERROR] chdir to /workdir/: $!\n";
 }
 
-# If first argument is 'pi', run pi-coding-agent instead
-if (@ARGV && $ARGV[0] eq "-pi") {
-    # Remove the 'pi' command from arguments and pass rest to pi binary
-    # Set HOME environment variable for node user
-    $ENV{PI_SKIP_VERSION_CHECK} //= 1;
-    $ENV{PI_TELEMETRY}          //= 0;
-    $ENV{EDITOR}                //= 'nano';
-    $ENV{PI_OFFLINE}            //= 1;
-    $ENV{PI_CODING_AGENT_DIR}   //= "/home/node/.pi/agent";
-    $ENV{PI_CODING_AGENT_SESSION_DIR} = "$workspace/.pi/sessions";
-    $ENV{LLAMA_SERVER_URL}      //= "http://[::1]:13305";
-    $ENV{LLAMA_BASE_URL}        //= $ENV{LLAMA_SERVER_URL};
-    $ENV{LLAMA_SERVER_API_KEY}  //= "nokeyneeded";
-    $ENV{SLOT_ID}               //= "0";
-    shift @ARGV;
-    exec("/home/node/.npm-global/bin/pi", @ARGV)
-        or die "[ERROR] failed to exec pi: $!\n";
-}
-# Otherwise, run opencode CLI with all provided arguments
 # Set HOME environment variable for node user
-$ENV{OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT} = "true";
-@ARGV && $ARGV[0] eq "-opencode" && shift @ARGV;
-exec("/home/node/.npm-global/bin/opencode", @ARGV)
-    or die "[ERROR] failed to exec: $!\n";
+$ENV{PI_SKIP_VERSION_CHECK} //= 1;
+$ENV{PI_TELEMETRY}          //= 0;
+$ENV{EDITOR}                //= 'nano';
+$ENV{PI_OFFLINE}            //= 1;
+$ENV{PI_CODING_AGENT_DIR}   //= "/home/node/.pi/agent";
+$ENV{PI_CODING_AGENT_SESSION_DIR} = "$workspace/.pi/sessions";
+$ENV{LLAMA_SERVER_URL}      //= "http://[::1]:13305";
+$ENV{LLAMA_BASE_URL}        //= $ENV{LLAMA_SERVER_URL};
+$ENV{LLAMA_SERVER_API_KEY}  //= "nokeyneeded";
+$ENV{SLOT_ID}               //= "0";
+exec("/home/node/.npm-global/bin/pi", @ARGV)
+    or die "[ERROR] failed to exec pi: $!\n";
