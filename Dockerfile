@@ -129,9 +129,6 @@ ENV TMPDIR=/pip/tmp
 ENV XDG_CACHE_HOME=/pip
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 ENV PIP_ROOT_USER_ACTION=ignore
-ENV COCOINDEX_CODE_DIR=$HDIR/.cocoindex
-ENV COCOINDEX_CODE_DB_PATH_MAPPING=/workdir=/coco-db-files
-ENV COCOINDEX_DISABLE_USAGE_TRACKING=1
 
 RUN mkdir -p $TMPDIR && chmod +s $TMPDIR
 RUN \
@@ -162,13 +159,6 @@ COPY pi_settings.json $HDIR/.pi/agent/settings.json
 COPY pi_auth.json $HDIR/.pi/agent/auth.json
 COPY mcp.json $HDIR/.pi/agent/mcp.json
 USER root
-ENV TMPDIR=/pip/tmp
-ENV XDG_CACHE_HOME=/pip
-ENV PIP_BREAK_SYSTEM_PACKAGES=1
-ENV PIP_ROOT_USER_ACTION=ignore
-ENV COCOINDEX_CODE_DIR=$HDIR/.cocoindex
-ENV COCOINDEX_CODE_DB_PATH_MAPPING=/workdir=/coco-db-files
-ENV COCOINDEX_DISABLE_USAGE_TRACKING=1
 RUN mkdir -p /mcp
 COPY ccc_granular /mcp/ccc_granular
 RUN \
@@ -177,7 +167,4 @@ RUN \
         -r /mcp/ccc_granular/requirements.txt
 RUN mkdir -p /coco-db-files && chown node:node /coco-db-files
 RUN ln -s /workspace/.cocoindex /home/node/.cocoindex
-ENV T_UID=1000
-ENV EDITOR=nano
-ENV VISUAL=nano
 ENTRYPOINT ["/usr/bin/perl", "/pi.pl"]

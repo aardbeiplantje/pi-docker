@@ -130,19 +130,19 @@ if(($ENV{DIND}//0) == 1 and !length($ENV{DOCKER_HOST}//"")){
         die "[ERROR] couldn't fork for daemonizing dockerd: $!\n";
     } else {
         eval {
-            POSIX::setsid() != -1 or (!$!{EPERM} and die "problem making new session/process group dockerd: $!\n");
-            chdir('/')                 or die "Cannot chdir to '/': $!\n";
+            POSIX::setsid() != -1 or (!$!{EPERM} and die "[ERROR] problem making new session/process group dockerd: $!\n");
+            chdir('/')                 or die "[ERROR] Cannot chdir to '/': $!\n";
             umask(0022);
             # redirect STDOUT
             my $l_file = POSIX::strftime("$workspace/docker/docker-%Y%m%d-%H:%M:%S.log", gmtime());
             open(my $l_fh, ">", $l_file)
-                or die "Can't open $l_file for dockerd logging: $!\n";
+                or die "[ERROR] Can't open $l_file for dockerd logging: $!\n";
             open(STDOUT, '>&', $l_fh)
-                or die "Can't dup STDOUT to $l_file: $!\n";
+                or die "[ERROR] Can't dup STDOUT to $l_file: $!\n";
             *STDOUT->autoflush();
             *STDERR->autoflush();
-            open(STDERR, '>&STDOUT')   or die "Can't dup STDERR to STDOUT: $!\n";
-            open(STDIN,  '</dev/null') or die "Can't read /dev/null: $!\n";
+            open(STDERR, '>&STDOUT')   or die "[ERROR] Can't dup STDERR to STDOUT: $!\n";
+            open(STDIN,  '</dev/null') or die "[ERROR] Can't read /dev/null: $!\n";
 
             # dup() sets $! as ioctl() is done in perl, so reset ERRNO
             $! = 0;
@@ -184,8 +184,8 @@ if(($ENV{DIND}//0) == 1 and !length($ENV{DOCKER_HOST}//"")){
 }
 
 # If running as root and UID environment variable is set, use that UID
-my $target_uid = $ENV{UID} // $UID;
 if($< == 0){
+    my $target_uid = $ENV{UID} // $UID;
     local $! = 0;
     # Drop to GID
     $) = "$GID 983 986 992 109";
@@ -206,6 +206,9 @@ if($< == 0){
 # Generate dynamic cocoindex global_settings.yml from ENV vars
 {
     my $coco_dir    = "$ENV{HDIR}/.cocoindex";
+    unlink $coco_dir if -l $coco_dir;
+    symlink("$workspace/.cocoindex", $coco_dir)
+        or die "[ERROR] ln -s $workspace/.cocoindex $coco_dir: $!\n";
     my $coco_file   = "$coco_dir/global_settings.yml";
     my $base_url    = $ENV{LLAMA_BASE_URL}       // $ENV{LLAMA_SERVER_URL}     // "http://[::1]:4000/v1";
     my $api_key     = $ENV{LLAMA_SERVER_API_KEY} // "nokeyneeded";
@@ -243,15 +246,26 @@ die "[ERROR] running as root EGID/RGID is not allowed\n"
 #  ↓ user 1000 (node)
 #
 
-$ENV{XDG_CACHE_HOME} = "$workspace/.cache";
-$ENV{PROMPT_COMMAND} = 'history -a';
-$ENV{HISTFILE} = $history_path;
-$ENV{HOME} = "/home/node";
-$ENV{LOGNAME} = "node";
-$ENV{PATH} = "/home/node/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$ENV{PATH}";
+$ENV{TMPDIR}                           = "/pip/tmp";
+$ENV{PIP_BREAK_SYSTEM_PACKAGES}        = 1;
+$ENV{PIP_ROOT_USER_ACTION}             = "ignore";
+$ENV{COCOINDEX_CODE_DIR}               = "$ENV{HDIR}/.cocoindex";
+$ENV{COCOINDEX_CODE_DB_PATH_MAPPING}   = "/workdir=/coco-db-files";
+$ENV{COCOINDEX_DISABLE_USAGE_TRACKING} = 1;
+$ENV{EDITOR}         //= "nano";
+$ENV{VISUAL}         //= "nano";
+$ENV{XDG_CACHE_HOME}   = "$workspace/.cache";
+$ENV{PROMPT_COMMAND}   = 'history -a';
+$ENV{HISTFILE}         = $history_path;
+$ENV{HOME}             = "/home/node";
+$ENV{LOGNAME}          = "node";
+$ENV{PATH}             = "$ENV{PATH}:/home/node/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
 
 # $ENV{BDIR} was mounted on /workdir/$BDIR
 if($ENV{BDIR}){
+    $ENV{COCOINDEX_CODE_STATE_DIR} = "$workspace/.cocoindex/$ENV{BDIR}";
+    mkdir $ENV{COCOINDEX_CODE_STATE_DIR}
+        or die "[ERROR] mkdir $ENV{COCOINDEX_CODE_STATE_DIR}: $!\n";
     chdir("/workdir/$ENV{BDIR}")
         or die "[ERROR] chdir to /workdir/$ENV{BDIR}: $!\n";
 
