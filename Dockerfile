@@ -113,7 +113,7 @@ RUN npm install -g --ignore-scripts @earendil-works/pi-agent-core
 RUN npm install -g --ignore-scripts @earendil-works/pi-ai
 RUN npm install -g --ignore-scripts @earendil-works/pi-tui
 RUN pi install npm:fd
-ARG PI_LLAMA_SHA
+ARG PI_LLAMA_SHA=main
 ARG CACHEBUST=1
 RUN echo "pi-llama cachebust: ${CACHEBUST}"
 RUN pi install git:github.com/aardbeiplantje/pi-llama@${PI_LLAMA_SHA}
