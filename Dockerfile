@@ -93,6 +93,12 @@ RUN mkdir -p /workspace/.local \
     ln -sfT /workspace/.local $HDIR/.local \
     && chown node:node /workspace/.local
 
+ENV TMPDIR=/pip/tmp
+RUN mkdir -p $TMPDIR && chmod +s $TMPDIR
+ENV XDG_CACHE_HOME=/pip
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+ENV PIP_ROOT_USER_ACTION=ignore
+
 # Set up non-root user
 USER node
 
@@ -123,15 +129,16 @@ RUN pi install npm:@0xkobold/pi-codebase-wiki
 RUN pi install npm:pi-mcp-extension
 RUN pi install npm:@tintinweb/pi-subagents
 RUN pi install npm:@termdraw/pi
+RUN pi install npm:pi-searxng
 
 # cocoindex
 USER root
-ENV TMPDIR=/pip/tmp
-ENV XDG_CACHE_HOME=/pip
-ENV PIP_BREAK_SYSTEM_PACKAGES=1
-ENV PIP_ROOT_USER_ACTION=ignore
 
-RUN mkdir -p $TMPDIR && chmod +s $TMPDIR
+RUN \
+    --mount=target=/pip,type=cache,sharing=locked \
+    python3 -m pip install --prefer-binary --upgrade \
+        ddgs
+
 RUN \
     --mount=target=/pip,type=cache,sharing=locked \
     python3 -m pip install --prefer-binary --upgrade \

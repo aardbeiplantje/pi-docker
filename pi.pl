@@ -246,7 +246,7 @@ die "[ERROR] running as root EGID/RGID is not allowed\n"
 #  ↓ user 1000 (node)
 #
 
-$ENV{TMPDIR}                           = "/pip/tmp";
+$ENV{TMPDIR}                           = "/tmp";
 $ENV{PIP_BREAK_SYSTEM_PACKAGES}        = 1;
 $ENV{PIP_ROOT_USER_ACTION}             = "ignore";
 $ENV{PYTHONDONTWRITEBYTECODE}          = 1;
