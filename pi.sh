@@ -104,8 +104,7 @@ exec docker run --rm -it \
     --group-add 109 \
     --group-add 992 \
     --tmpfs /home/node/.cocoindex:rw,suid,exec,uid=1000,size=1M \
-    --tmpfs /tmp:rw,suid,exec,size=2G \
-    --tmpfs /var/tmp:rw,suid,exec,size=1G \
+    --tmpfs /tmp:rw,suid,exec,size=8G \
     --device /dev/kfd \
     --device /dev/dri \
     --device /dev/accel \

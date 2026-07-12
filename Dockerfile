@@ -94,6 +94,7 @@ RUN mkdir -p /workspace/.local \
     ln -sfT /workspace/.local $HDIR/.local \
     && chown node:node /workspace/.local
 
+RUN rm -rf /var/tmp; ln -s /tmp /var/tmp
 ENV TMPDIR=/pip/tmp
 RUN mkdir -p $TMPDIR && chmod +s $TMPDIR
 ENV XDG_CACHE_HOME=/pip
@@ -180,4 +181,5 @@ RUN \
     done
 RUN mkdir -p /coco-db-files && chown node:node /coco-db-files
 RUN ln -s /workspace/.cocoindex /home/node/.cocoindex
+ENV TMPDIR=/var/tmp
 ENTRYPOINT ["/usr/bin/perl", "/pi.pl"]
