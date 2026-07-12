@@ -84,6 +84,7 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /
       libvulkan-dev \
       spirv-headers \
       sqlite3 \
+      xxd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 USER root
