@@ -3,7 +3,7 @@
   "enableSkillCommands": true,
   "theme": "dark",
   "packages": [
-    "git:github.com/aardbeiplantje/pi-llama@feature/llama-slot-handling",
+    "git:github.com/aardbeiplantje/pi-llama@main",
     "npm:pi-mcp-extension",
     "npm:@tintinweb/pi-subagents",
     "npm:pi-searxng-search",
@@ -23,5 +23,12 @@
   "compaction": {
     "enabled": true
   },
-  "httpIdleTimeoutMs": 3600000
+  "httpIdleTimeoutMs": 3600000,
+  "defaultThinkingLevel": "max",
+  "thinkingBudgets": {
+    "minimal": 1024,
+    "low": 4096,
+    "medium": 10240,
+    "high": 32768
+  }
 }
