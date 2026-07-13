@@ -17,22 +17,30 @@ AI-powered CLI tool packaged as a Docker image with Docker-in-Docker (DIND) supp
 
 | Component | Purpose |
 |----------|--------|
-| **Dockerfile** | Multi-stage build (~4 stages): installs Node.js 26, pi.dev CLI, docker-ce stack |
-| **pi.pl** | Perl entry point - drops privileges, sets up environment, starts dockerd if DIND=1, then execs pi.dev |
-| **aicli.sh** | Docker run wrapper - shares host sockets, sets env vars, launches container |
-| **pi** | Thin wrapper around `aicli.sh` with `-pi` flag |
+| **Dockerfile** | Multi-stage build (~4 stages): installs Node.js 26, pi.dev CLI, docker-ce, llama.cpp, Python |
+| **pi.pl** | Perl entry point - drops privileges, sets env, starts dockerd if DIND=1, execs pi.dev |
+| **pi.sh** | Shell wrapper - shares host sockets (docker.sock, SSH agent, git config), sets env, launches container |
+| **pi** | Thin wrapper around `pi.sh` with `-pi` flag for direct pi.dev execution |
 | **pi.json** | Pi.dev agent configuration (model, tools, permissions, MCP servers) |
+| **mcp.json** | MCP server configuration for CocoIndex tools |
+| **pi_settings.json** | Pi agent runtime settings (theme, retry policies, thinking budgets) |
+| **pi_auth.json** | Lemonade OAuth authentication configuration |
+| **pi-llama/** | pi-llama extension for auto-discovering llama.cpp models |
+| **lemonade-pi-plugin/** | Lemonade LLM server extension with login flow |
+| **mcp/** | CocoIndex MCP server (ccc-granular) |
+| **cocoindex_plugins/** | Custom embedding providers (LiteLLM, llamacpp) |
+| **skills/** | Task-specific skill definitions (.gitkeep) |
+| **themes/** | UI theme configurations (.gitkeep) |
 
 ### Runtime Flow
 
 ```
-aicli.sh (Docker run with shared volumes: docker.sock, SSH agent, git config, ROCm)
+pi.sh (Docker run with shared volumes: docker.sock, SSH agent, git config, X11, ROCm)
   → pi.pl drops privileges (root→node), sets up env, starts dockerd if DIND=1
     → execs `/home/node/.npm-global/bin/pi` (the actual CLI tool)
 ```
 
-Runtime user: `node:1000`, but entrypoint may switch to configured UID via the `UID`
-environment variable.
+Runtime user: `node:1000` (configurable via `$ENV{UID}`), groups: `video` (986), `render` (983), `audio` (992). Memory limits: stack 64MB, memlock unlimited.
 
 ---
 
@@ -117,6 +125,46 @@ bash aicli.sh -pi
 - Proxy settings (HTTP/HTTPS)
 - Git authentication via environment variables
 
+### LLM Integration
+- **Local LLM inference**: llama.cpp with model auto-discovery
+- **Lemonade**: OAuth-based local LLM server integration
+- **LiteLLM**: Embedding provider for search
+- Configurable via `LLAMA_SERVER_URL`, `LLAMA_MODEL`, `LEMONADE_URL` env vars
+
+### CocoIndex Features
+- Semantic code indexing via `ccc` command
+- MCP tools for codebase search, init, status, reset
+- State per directory (per-workdir isolation)
+
+### Extension Ecosystem
+- **pi-llama**: Auto-discovers llama.cpp models via `/model` command
+- **lemonade-pi-plugin**: Lemonade server integration with login flow
+- Extensible via `~/.pi/agent/extensions/`
+
+### Docker-in-Docker (DIND)
+- Automatically starts local `dockerd` when `DIND=1` (default)
+- Forks dockerd process with proper session handling
+- Mounts Docker socket inside container for container management
+- Supports GPU passthrough (`--device /dev/kfd`, `/dev/dri`)
+
+### Security & Privilege Management
+- Drops privileges: root → UID 1000 (user `node`)
+- Configurable UID via `$ENV{UID}` environment variable
+- Groups added: video (986), render (983), audio (992)
+- Memory lock and stack limits for GPU access
+- Seccomp disabled for maximum permissions when needed
+
+### GPU Support
+- **NVIDIA**: `/dev/kfd`, `/dev/dri` devices
+- **AMD ROCm**: `/opt/rocm` bind-mount
+- **Apple Silicon**: `/dev/accel`
+
+### Shared Host Context
+- Docker socket, SSH agent, git config, Docker config
+- X11 display for GUI access
+- Proxy settings (HTTP/HTTPS)
+- Git authentication via environment variables
+
 ---
 
 ## 🏗️ Dockerfile Structure
@@ -175,15 +223,136 @@ docker buildx bake -f docker-bake.hcl release \
 
 - **Provenance**: Type: `provenance`, Mode: `max`
 - **SBOM**: Software Bill of Materials
-- **Platform**: `linux/amd64`
+- **Platform**: `linux/amd64` (customizable in docker-bake.hcl)
+
+---
+
+## 📐 Build System
+
+### Build Targets (docker-bake.hcl)
+
+| Target | Description |
+|--------|-------------|
+| `local` | Build for local use with `docker run` |
+| `containers` | Build and push to registry with provenance and SBOM |
+
+### Local Build
+
+```bash
+# Clean build
+docker buildx bake -f docker-bake.hcl --no-cache
+
+# With cache busting
+docker buildx bake -f docker-bake.hcl --set "*.CACHEBUST=2"
+
+# Custom cache busting (after apt changes)
+docker buildx bake -f docker-bake.hcl --set "*.CACHEBUST=2"
+```
+
+### Multi-platform Push
+
+```bash
+# Push to a registry
+docker buildx bake -f docker-bake.hcl release \
+  --set "*.DOCKER_REGISTRY=ghcr.io" \
+  --set "*.DOCKER_REPOSITORY=my-org" \
+  --set "*.DOCKER_IMAGE_NAME=pi-dev" \
+  --set "*.DOCKER_TAG=1.0"
+
+# Custom image name
+docker buildx bake -f docker-bake.hcl release \
+  --set "*.DOCKER_IMAGE_NAME=ai-dev-tools" \
+  --set "*.DOCKER_TAG=latest"
+```
+
+### Multi-Platform Build
+
+```bash
+# Build for multiple platforms
+docker buildx bake -f docker-bake.hcl release \
+  --set "*.DOCKER_PLATFORM=linux/amd64,linux/arm64" \
+  --set "*.DOCKER_TAG=latest"
+```
+
+### Cache Busting Mechanism
+
+To force rebuild of specific layers:
+
+1. **Dockerfile ARG `CACHEBUST`** with default value "1"
+2. Set this variable higher in `docker-bake.hcl` triggers cache invalidation
+
+### Dockerfile Structure
+
+Multi-stage build (~4 stages):
+
+1. **`AS base`**: ~40+ development tools, Docker CE, Node.js 26, Python 3.13
+2. **`AS runtime`**: Clean installs, symlink setup, environment configuration
+3. **Final**: Copies configuration files, sets entrypoint
+
+### Build Outputs
+
+- **Provenance**: Type: `provenance`, Mode: `max`
+- **SBOM**: Software Bill of Materials
+- **Platform**: `linux/amd64` (customizable in docker-bake.hcl)
 
 ---
 
 ## 🔧 Configuration (pi.json)
 
-The configuration file lives at `/workspace/pi.json` inside the image.
+The configuration file lives at `/home/node/pi.json` inside the image.
 
 ### Configuration Schema
+
+```json
+{
+  "$schema": "https://pi.dev/config.json",
+  "provider": {
+    "llama.cpp": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "llama-server (local)",
+      "models": {
+        "{env:LLAMA_MODEL}": {
+          "constraints": {"jsonMode": true},
+          "parameters": {"stop": ["␣", "‪", "‭"], "temperature": 0.1}
+        }
+      }
+    }
+  },
+  "model": "llama.cpp/{env:LLAMA_MODEL}",
+  "permission": {
+    "edit": "allow",
+    "bash": "allow"
+  },
+  "compaction": {
+    "enabled": true,
+    "auto": true,
+    "threshold": 0.90,
+    "strategy": "summarize",
+    "preserveRecentMessages": 6,
+    "preserveSystemPrompt": true
+  },
+  "mcp": {
+    "ccc-granular": {
+      "type": "local",
+      "enabled": true,
+      "command": ["python3", "/mcp/ccc/server.py"]
+    },
+    "cocoindex-code": {
+      "type": "local",
+      "enabled": true,
+      "command": ["ccc", "mcp"]
+    }
+  }
+}
+```
+
+### Configuration Rules
+
+- **Variable resolution**: Use `{env:VAR_NAME}` style substitution at runtime
+- **Validation**: Uses `$schema` for pi.dev schema validation
+- **Persistence**: Config is loaded once at startup; changes require restart
+
+### Example: Full Configuration
 
 ```json
 {
@@ -199,9 +368,7 @@ The configuration file lives at `/workspace/pi.json` inside the image.
       "models": {
         "{env:LLAMA_MODEL}": {
           "name": "{env:LLAMA_MODEL}",
-          "constraints": {
-            "jsonMode": true
-          },
+          "constraints": {"jsonMode": true},
           "parameters": {
             "stop": ["␣", "‪", "‭"],
             "temperature": 0.1
@@ -242,22 +409,6 @@ The configuration file lives at `/workspace/pi.json` inside the image.
       "command": ["ccc", "mcp"]
     }
   }
-}
-```
-
-### Configuration Rules
-
-- **Variable resolution**: Use `{env:VAR_NAME}` style substitution at runtime
-- **Validation**: Uses `$schema` for pi.dev schema validation
-- **Persistence**: Config is loaded once at startup; changes require restart
-
-### Environment Variables in Config
-
-```json
-{
-  "apiKey": "{env:LLAMA_SERVER_API_KEY}",
-  "baseURL": "{env:LLAMA_SERVER_URL}",
-  "model": "llama.cpp/{env:LLAMA_MODEL}"
 }
 ```
 
@@ -333,35 +484,33 @@ bash aicli.sh -pi
 ## 📁 Project Structure
 
 ```
-/workdir/pi.dev.git/
+/workdir/pi.git/
 ├── Dockerfile           # Multi-stage build (~4 stages)
 ├── pi.pl            # Perl entrypoint - main logic
 │   - Drop privileges (root → UID)
 │   - Setup environment
 │   - Start dockerd if DIND=1
 │   - Execute pi.dev CLI
-├── aicli.sh            # Docker run wrapper
+├── pi.sh                  # Shell wrapper
 │   - Share host sockets (docker.sock, SSH agent, git config)
 │   - Set environment variables
 │   - Launch container
-├── pi                  # Thin wrapper around aicli.sh with -pi flag
-├── pi.json             # Agent configuration
-├── docker-bake.hcl     # Build targets and configuration
-├── plugins/            # Custom pi.dev plugins
-│   └── pi-slot-cache/
-├── mcp_servers/        # MCP server scripts
-│   ├── ccc_granular/
-│   ├── llama-slot-cache/
-├── cocoindex_plugins/  # Code embedding provider
-│   ├── __init__.py
+├── pi                     # Thin wrapper around pi.sh with -pi flag
+├── mcp.json                   # MCP server configuration
+├── pi_settings.json   # Pi agent runtime settings (theme, compaction)
+├── pi_auth.json       # Lemonade OAuth authentication configuration
+├── pi-llama/              # pi-llama extension (model discovery)
+├── lemonade-pi-plugin/    # Lemonade server extension
+├── mcp/                    # CocoIndex MCP server (ccc-granular)
+│   └── ccc/server.py
+├── cocoindex_plugins/      # Custom embedding providers
 │   ├── register_providers.py
+│   ├── sitecustomize.py
 │   └── llamacpp_provider/
-├── skills/            # Task-specific skills (currently empty)
-├── commands/          # CLI commands
-│   └── purge-pi-dev-archived-sessions/
-├── pi_auth.json       # PI authentication configuration
-├── pi_settings.json   # PI configuration
-├── tui.json           # TUI configuration
+├── skills/                # Task-specific skills (.gitkeep)
+├── themes/                # UI themes (.gitkeep)
+├── docker-bake.hcl     # Build targets and configuration
+├── pi.json             # Agent configuration
 └── README.md          # This file
 ```
 
@@ -423,4 +572,4 @@ This is a community-maintained project. Feel free to:
 
 ---
 
-*Last updated: 2026-07-11*
+*Last updated: 2026-07-13*
