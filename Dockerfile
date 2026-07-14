@@ -190,11 +190,6 @@ RUN \
         pygame \
         sqlalchemy comfy_aimdo blake3 alembic comfy_kitchen torchsde \
         || exit $?
-RUN \
-    --mount=target=/pip,type=cache,sharing=locked \
-    python3 -m pip install --prefer-binary --upgrade \
-        causal-conv1d \
-        || exit $?
 
 
 FROM base AS runtime
