@@ -115,6 +115,8 @@ ENV NPM_CONFIG_PREFIX=$HDIR/.npm-global
 ENV PATH=$PATH:$HDIR/.npm-global/bin
 ENV BUN_INSTALL=$HDIR/.bun
 RUN npm set prefix $HDIR
+ARG CACHEBUST=1
+RUN echo "pi-llama cachebust: ${CACHEBUST}"
 RUN npm install -g npm
 RUN npm install -g bun
 RUN npm install -g --ignore-scripts @earendil-works/pi-coding-agent
@@ -123,8 +125,6 @@ RUN npm install -g --ignore-scripts @earendil-works/pi-ai
 RUN npm install -g --ignore-scripts @earendil-works/pi-tui
 RUN pi install npm:fd
 ARG PI_LLAMA_SHA=main
-ARG CACHEBUST=1
-RUN echo "pi-llama cachebust: ${CACHEBUST}"
 RUN pi install git:github.com/aardbeiplantje/pi-llama@${PI_LLAMA_SHA}
 RUN pi install git:github.com/aardbeiplantje/lemonade-pi-plugin@feature-llama.cpp-slot-id
 RUN pi install npm:pi-memctx
