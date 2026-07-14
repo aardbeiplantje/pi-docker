@@ -152,10 +152,49 @@ COPY --chown=root:root cocoindex_plugins/sitecustomize.py /lib/python/sitecustom
 ENV PYTHONPATH=/lib/python
 RUN python3 /lib/python/cocoindex_plugins/register_providers.py
 
+# install torch
+RUN \
+    --mount=target=/pip,type=cache,sharing=locked \
+    python3 -m pip install --prefer-binary --upgrade \
+        --index-url https://repo.amd.com/rocm/whl/gfx1151/ \
+        "rocm[libraries,devel]" \
+        torch \
+        torchvision \
+        torchaudio \
+        || exit $?
+RUN \
+    --mount=target=/pip,type=cache,sharing=locked \
+    python3 -m pip install --prefer-binary --upgrade \
+        --extra-index-url https://repo.amd.com/rocm/whl/gfx1151/ \
+        "jax_rocm7_plugin==0.9.1+rocm7.13.0" \
+        "jax_rocm7_pjrt==0.9.1+rocm7.13.0" \
+        "triton==3.6.0+rocm7.13.0" \
+        tf-keras \
+        || exit $?
+RUN \
+    --mount=target=/pip,type=cache,sharing=locked \
+    python3 -m pip install --prefer-binary --upgrade \
+        "jax==0.9.1" \
+        "jaxlib==0.9.1" \
+        || exit $?
+RUN \
+    --mount=target=/pip,type=cache,sharing=locked \
+    python3 -m pip install --prefer-binary --upgrade \
+        https://rocm.frameworks.amd.com/whl/gfx1151/flash_attn-2.8.3-py3-none-any.whl \
+        || exit $?
+
+RUN \
+    --mount=target=/pip,type=cache,sharing=locked \
+    python3 -m pip install --prefer-binary --upgrade \
+        accelerate \
+        pygame \
+        sqlalchemy comfy_aimdo blake3 alembic comfy_kitchen torchsde \
+        || exit $?
+
+
 FROM base AS runtime
 USER root
 
-USER root
 RUN mkdir -p /workspace/.local
 USER node
 RUN rm -rf $HDIR/.local \
