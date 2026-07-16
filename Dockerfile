@@ -191,6 +191,14 @@ RUN \
         sqlalchemy comfy_aimdo blake3 alembic comfy_kitchen torchsde \
         || exit $?
 
+RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("JSON")'
+RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("Crypt::OpenSSL::RSA")'
+RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("Digest::SHA")'
+RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("Net::Curl")'
+RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("LWP::UserAgent")'
+RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("Term::ReadLine::Gnu")'
+RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("Data::UUID")'
+RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("JSON::PP")'
 
 FROM base AS runtime
 USER root
