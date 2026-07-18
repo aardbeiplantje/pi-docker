@@ -110,7 +110,6 @@ ENV HDIR=/home/node
 
 # pi.dev
 ENV PI_CODING_AGENT_DIR=$HDIR/.pi/agent
-ENV LEMONADE_URL=http://[::1]:13305
 ENV NPM_CONFIG_PREFIX=$HDIR/.npm-global
 ENV PATH=$PATH:$HDIR/.npm-global/bin
 ENV BUN_INSTALL=$HDIR/.bun
@@ -126,7 +125,6 @@ RUN npm install -g --ignore-scripts @earendil-works/pi-tui
 RUN pi install npm:fd
 ARG PI_LLAMA_SHA=main
 RUN pi install git:github.com/aardbeiplantje/pi-llama@${PI_LLAMA_SHA}
-RUN pi install git:github.com/aardbeiplantje/lemonade-pi-plugin@feature-llama.cpp-slot-id
 RUN pi install npm:pi-memctx
 RUN pi install npm:@0xkobold/pi-codebase-wiki
 RUN pi install npm:pi-mcp-extension
