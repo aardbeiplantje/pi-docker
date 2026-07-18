@@ -123,7 +123,7 @@ RUN npm install -g --ignore-scripts @earendil-works/pi-agent-core
 RUN npm install -g --ignore-scripts @earendil-works/pi-ai
 RUN npm install -g --ignore-scripts @earendil-works/pi-tui
 RUN pi install npm:fd
-ARG PI_LLAMA_SHA=main
+ARG PI_LLAMA_SHA=feat/llama-slot-id-env-var
 RUN pi install git:github.com/aardbeiplantje/pi-llama@${PI_LLAMA_SHA}
 RUN pi install npm:pi-memctx
 RUN pi install npm:@0xkobold/pi-codebase-wiki
