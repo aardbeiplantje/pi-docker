@@ -1,3 +1,6 @@
 [submodule "pi-llama"]
 	path = pi-llama
 	url = git@github.com:aardbeiplantje/pi-llama.git
+[submodule "pi-subagents"]
+	path = pi-subagents
+	url = git@github.com:aardbeiplantje/pi-subagents.git
