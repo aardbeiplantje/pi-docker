@@ -102,40 +102,9 @@ ENV XDG_CACHE_HOME=/pip
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 ENV PIP_ROOT_USER_ACTION=ignore
 
-# Set up non-root user
-USER node
-
-WORKDIR /home/node
-ENV HDIR=/home/node
-
-# pi.dev
-ENV PI_CODING_AGENT_DIR=$HDIR/.pi/agent
-ENV NPM_CONFIG_PREFIX=$HDIR/.npm-global
-ENV PATH=$PATH:$HDIR/.npm-global/bin
-ENV BUN_INSTALL=$HDIR/.bun
-RUN npm set prefix $HDIR
-ARG CACHEBUST=1
-RUN echo "pi-llama cachebust: ${CACHEBUST}"
-RUN npm install -g npm
-RUN npm install -g bun
-RUN npm install -g --ignore-scripts @earendil-works/pi-coding-agent
-RUN npm install -g --ignore-scripts @earendil-works/pi-agent-core
-RUN npm install -g --ignore-scripts @earendil-works/pi-ai
-RUN npm install -g --ignore-scripts @earendil-works/pi-tui
-RUN pi install npm:fd
-ARG PI_LLAMA_SHA=feat/llama-slot-id-env-var
-RUN pi install git:github.com/aardbeiplantje/pi-llama@${PI_LLAMA_SHA}
-RUN pi install npm:pi-memctx
-RUN pi install npm:@0xkobold/pi-codebase-wiki
-RUN pi install npm:pi-mcp-extension
-RUN pi install npm:@tintinweb/pi-subagents
-RUN pi install npm:@termdraw/pi
-RUN pi install npm:pi-searxng-search
-RUN pi install npm:pi-smart-fetch
-
-# cocoindex
 USER root
 
+# cocoindex
 RUN \
     --mount=target=/pip,type=cache,sharing=locked \
     python3 -m pip install --prefer-binary --upgrade \
@@ -145,10 +114,6 @@ RUN \
     --mount=target=/pip,type=cache,sharing=locked \
     python3 -m pip install --prefer-binary --upgrade \
         cocoindex-code
-COPY --chown=root:root cocoindex_plugins /lib/python/cocoindex_plugins
-COPY --chown=root:root cocoindex_plugins/sitecustomize.py /lib/python/sitecustomize.py
-ENV PYTHONPATH=/lib/python
-RUN python3 /lib/python/cocoindex_plugins/register_providers.py
 
 # install torch
 RUN \
@@ -189,6 +154,7 @@ RUN \
         sqlalchemy comfy_aimdo blake3 alembic comfy_kitchen torchsde \
         || exit $?
 
+# Perl
 RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("JSON")'
 RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("Crypt::OpenSSL::RSA")'
 RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("Digest::SHA")'
@@ -197,6 +163,43 @@ RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("
 RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("Term::ReadLine::Gnu")'
 RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("Data::UUID")'
 RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("JSON::PP")'
+
+# Set up non-root user
+USER node
+
+WORKDIR /home/node
+ENV HDIR=/home/node
+
+# pi.dev
+ENV PI_CODING_AGENT_DIR=$HDIR/.pi/agent
+ENV NPM_CONFIG_PREFIX=$HDIR/.npm-global
+ENV PATH=$PATH:$HDIR/.npm-global/bin
+ENV BUN_INSTALL=$HDIR/.bun
+RUN npm set prefix $HDIR
+ARG CACHEBUST=1
+RUN echo "pi-llama cachebust: ${CACHEBUST}"
+RUN npm install -g npm
+RUN npm install -g bun
+RUN npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+RUN npm install -g --ignore-scripts @earendil-works/pi-agent-core
+RUN npm install -g --ignore-scripts @earendil-works/pi-ai
+RUN npm install -g --ignore-scripts @earendil-works/pi-tui
+RUN pi install npm:fd
+ARG PI_LLAMA_SHA=feat/llama-slot-id-env-var
+RUN pi install git:github.com/aardbeiplantje/pi-llama@${PI_LLAMA_SHA}
+RUN pi install npm:pi-memctx
+RUN pi install npm:@0xkobold/pi-codebase-wiki
+RUN pi install npm:pi-mcp-extension
+RUN pi install npm:@tintinweb/pi-subagents
+RUN pi install npm:@termdraw/pi
+RUN pi install npm:pi-searxng-search
+RUN pi install npm:pi-smart-fetch
+
+USER root
+COPY --chown=root:root cocoindex_plugins /lib/python/cocoindex_plugins
+COPY --chown=root:root cocoindex_plugins/sitecustomize.py /lib/python/sitecustomize.py
+ENV PYTHONPATH=/lib/python
+RUN python3 /lib/python/cocoindex_plugins/register_providers.py
 
 FROM base AS runtime
 USER root
