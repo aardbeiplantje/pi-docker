@@ -24,9 +24,9 @@ AI-powered CLI tool packaged as a Docker image with Docker-in-Docker (DIND) supp
 | **pi.json** | Pi.dev agent configuration (model, tools, permissions, MCP servers) |
 | **mcp.json** | MCP server configuration for CocoIndex tools |
 | **pi_settings.json** | Pi agent runtime settings (theme, retry policies, thinking budgets) |
-| **pi_auth.json** | Lemonade OAuth authentication configuration |
+| **pi_auth.json** | OAuth authentication configuration (empty, no providers configured) |
 | **pi-llama/** | pi-llama extension for auto-discovering llama.cpp models |
-| **lemonade-pi-plugin/** | Lemonade LLM server extension with login flow |
+
 | **mcp/** | CocoIndex MCP server (ccc-granular) |
 | **cocoindex_plugins/** | Custom embedding providers (LiteLLM, llamacpp) |
 | **skills/** | Task-specific skill definitions (.gitkeep) |
@@ -127,9 +127,8 @@ bash aicli.sh -pi
 
 ### LLM Integration
 - **Local LLM inference**: llama.cpp with model auto-discovery
-- **Lemonade**: OAuth-based local LLM server integration
 - **LiteLLM**: Embedding provider for search
-- Configurable via `LLAMA_SERVER_URL`, `LLAMA_MODEL`, `LEMONADE_URL` env vars
+- Configurable via `LLAMA_SERVER_URL`, `LLAMA_MODEL` env vars
 
 ### CocoIndex Features
 - Semantic code indexing via `ccc` command
@@ -138,7 +137,6 @@ bash aicli.sh -pi
 
 ### Extension Ecosystem
 - **pi-llama**: Auto-discovers llama.cpp models via `/model` command
-- **lemonade-pi-plugin**: Lemonade server integration with login flow
 - Extensible via `~/.pi/agent/extensions/`
 
 ### Docker-in-Docker (DIND)
@@ -498,9 +496,7 @@ bash aicli.sh -pi
 ├── pi                     # Thin wrapper around pi.sh with -pi flag
 ├── mcp.json                   # MCP server configuration
 ├── pi_settings.json   # Pi agent runtime settings (theme, compaction)
-├── pi_auth.json       # Lemonade OAuth authentication configuration
-├── pi-llama/              # pi-llama extension (model discovery)
-├── lemonade-pi-plugin/    # Lemonade server extension
+├── pi_auth.json       # OAuth authentication configuration (empty)
 ├── mcp/                    # CocoIndex MCP server (ccc-granular)
 │   └── ccc/server.py
 ├── cocoindex_plugins/      # Custom embedding providers

@@ -16,9 +16,7 @@ and integrated code indexing capabilities.
 | `pi.json`        | Pi.dev agent config (model, tools, permissions, MCP servers) |
 | `mcp.json`       | Model Context Protocol server configuration for CocoIndex tools |
 | `pi_settings.json`| Pi agent runtime settings (theme, retry policies, thinking budgets) |
-| `pi_auth.json`   | Lemonade OAuth authentication configuration |
-| `pi-llama/`      | pi-llama extension for auto-discovering llama.cpp models |
-| `lemonade-pi-plugin/` | Lemonade LLM server extension with login flow |
+| `pi_auth.json`   | OAuth authentication configuration (empty, no providers configured) |
 | `mcp/`           | CocoIndex MCP server (ccc-granular) |
 | `cocoindex_plugins/` | Custom embedding providers (LiteLLM, llamacpp) |
 | `skills/`        | Task-specific skill definitions (.gitkeep) |
@@ -51,7 +49,7 @@ The config lives at `/home/node/pi.json` inside the image. Edit rules:
 
 ### Configuration Sections
 
-- **provider**: LLM configuration (llama.cpp, Lemonade, OpenAI-compatible)
+- **provider**: LLM configuration (llama.cpp only)
 - **model**: Resolved from `{env:LLAMA_MODEL}` substitution
 - **permission**: edit, bash permissions
 - **compaction**: auto-compaction settings, thresholds, strategies
@@ -118,9 +116,8 @@ The config lives at `/home/node/pi.json` inside the image. Edit rules:
 
 ### LLM Integration
 - **Local LLM inference**: llama.cpp with model auto-discovery
-- **Lemonade**: OAuth-based local LLM server integration
 - **LiteLLM**: Embedding provider for search
-- Configurable via `LLAMA_SERVER_URL`, `LLAMA_MODEL`, `LEMONADE_URL` env vars
+- Configurable via `LLAMA_SERVER_URL`, `LLAMA_MODEL` env vars
 
 ### CocoIndex Features
 - Semantic code indexing via `ccc` command
@@ -129,7 +126,6 @@ The config lives at `/home/node/pi.json` inside the image. Edit rules:
 
 ### Extension Ecosystem
 - **pi-llama**: Auto-discovers llama.cpp models via `/model` command
-- **lemonade-pi-plugin**: Lemonade server integration with login flow
 - Extensible via `~/.pi/agent/extensions/`
 
 ## Build Targets (docker-bake.hcl)
