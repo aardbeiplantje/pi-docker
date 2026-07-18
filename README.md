@@ -72,6 +72,7 @@ Set environment variables before running `aicli.sh`:
 | LLAMA_MODEL | qwen3.5:0.8b | Model name (for llama.cpp) |
 | LLAMA_SERVER_URL | http://[::1]:4000/v1 | LLM server base URL |
 | LLAMA_SERVER_API_KEY | — | LLM server API key |
+| LLAMA_SLOT_ID | 0 | KV cache slot ID for llama.cpp (reuses same slot across requests) |
 | DOCKER_HOST | — | Docker daemon socket (set for non-DIND) |
 | CONTAINERD_ADDRESS | — | Containerd socket path |
 | ROCM_PATH | ~/therock-dist-linux-gfx1151-latest | AMD ROCm runtime path |
@@ -127,8 +128,9 @@ bash aicli.sh -pi
 
 ### LLM Integration
 - **Local LLM inference**: llama.cpp with model auto-discovery
+- **KV cache slots**: Reuse the same slot across requests via `LLAMA_SLOT_ID` env var (default: 0)
 - **LiteLLM**: Embedding provider for search
-- Configurable via `LLAMA_SERVER_URL`, `LLAMA_MODEL` env vars
+- Configurable via `LLAMA_SERVER_URL`, `LLAMA_MODEL`, `LLAMA_SLOT_ID` env vars
 
 ### CocoIndex Features
 - Semantic code indexing via `ccc` command
