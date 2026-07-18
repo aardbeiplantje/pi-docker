@@ -213,10 +213,9 @@ RUN mkdir -p /workdir
 RUN mkdir -p /opt/rocm
 COPY pi.pl /
 COPY pi_settings.json $HDIR/.pi/agent/settings.json
-COPY pi_auth.json $HDIR/.pi/agent/auth.json
 COPY mcp.json $HDIR/.pi/agent/mcp.json
 COPY APPEND_SYSTEM.md $HDIR/.pi/agent/APPEND_SYSTEM.md
-RUN cd $HDIR/.pi/agent && jq < mcp.json && jq < auth.json && jq < settings.json
+RUN cd $HDIR/.pi/agent && jq < mcp.json && jq < settings.json
 COPY skills $HDIR/.pi/agent/
 COPY themes $HDIR/.pi/agent/
 COPY mcp /mcp
