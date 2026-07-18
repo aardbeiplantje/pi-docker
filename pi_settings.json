@@ -3,7 +3,7 @@
   "enableSkillCommands": true,
   "theme": "dark",
   "packages": [
-    "git:github.com/aardbeiplantje/pi-llama@main",
+    "git:github.com/aardbeiplantje/pi-llama@feat/llama-slot-id-env-var",
     "npm:pi-mcp-extension",
     "npm:@tintinweb/pi-subagents",
     "npm:pi-searxng-search",
@@ -31,5 +31,8 @@
     "medium": 10240,
     "high": 32768,
     "max": 65536
+  },
+  "subagents": {
+    "maxConcurrent": 1
   }
 }
