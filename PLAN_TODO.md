@@ -33,9 +33,11 @@ The slot ID system manages llama.cpp KV cache slots to prevent cache eviction wh
 ## TODO
 
 ### High Priority
+- [x] **Fix `pi.pl` env var name** — `SLOT_ID` → `LLAMA_SLOT_ID` (commit `18b09af`)
+- [x] **Fix llama.cpp API key** — `slot_id` → `id_slot` (commit `3ceff1a`)
+- [x] **Fix slot release** — Clean up both agentId and slot value from pool (commit `05035b1`)
+- [ ] **Investigate full prompt prefill** — Slot 1 used but KV cache not preserved (see issue below)
 - [ ] **Test slot pool with multiple sub-agents** — Verify auto-assignment works when `maxConcurrent > 1`
-- [ ] **Document `LLAMA_SLOT_ID` env var** — Add to `README.md` and `AGENTS.md` with examples
-- [ ] **Handle slot exhaustion** — Current fallback reuses first slot; consider rejecting requests instead
 
 ### Medium Priority
 - [ ] **Add slot health checks** — Detect stale/evicted slots and reassign
@@ -46,6 +48,19 @@ The slot ID system manages llama.cpp KV cache slots to prevent cache eviction wh
 - [ ] **Add slot metrics** — Expose pool stats via `/metrics` endpoint or CLI command
 - [ ] **Support per-model slot ranges** — Different models can use different slot pools
 - [ ] **Cleanup on session shutdown** — Ensure all slots are released when session ends
+
+---
+
+## Known Issues
+
+### Full Prompt Prefill on Slot 1
+- **Symptom**: Requests go to slot 1 (confirmed via logs), but still see full prefill (~127s for ~56k tokens)
+- **llama.cpp config**: `--slot-save-path /llama.cpp/slots` is set
+- **Possible causes**:
+  - Cache not loading from disk on slot reuse
+  - `--slot-prompt-similarity 0.90` threshold too high, causing cache invalidation
+  - Idle slot cache being cleared before next request
+- **Next step**: Check `/llama.cpp/slots/` directory for saved cache files; verify cache is being loaded on subsequent requests
 
 ---
 
