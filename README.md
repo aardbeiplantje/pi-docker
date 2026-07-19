@@ -72,7 +72,7 @@ Set environment variables before running `aicli.sh`:
 | LLAMA_MODEL | qwen3.5:0.8b | Model name (for llama.cpp) |
 | LLAMA_SERVER_URL | http://[::1]:4000/v1 | LLM server base URL |
 | LLAMA_SERVER_API_KEY | — | LLM server API key |
-| LLAMA_SLOT_ID | 0 | KV cache slot ID for llama.cpp (reuses same slot across requests) |
+| LLAMA_SLOT_ID | 0 | KV cache slot ID or range (e.g., `"0"`, `"0-3"`, `"1-6"`) for llama.cpp slot pool isolation |
 | DOCKER_HOST | — | Docker daemon socket (set for non-DIND) |
 | CONTAINERD_ADDRESS | — | Containerd socket path |
 | ROCM_PATH | ~/therock-dist-linux-gfx1151-latest | AMD ROCm runtime path |
@@ -128,9 +128,45 @@ bash aicli.sh -pi
 
 ### LLM Integration
 - **Local LLM inference**: llama.cpp with model auto-discovery
-- **KV cache slots**: Reuse the same slot across requests via `LLAMA_SLOT_ID` env var (default: 0)
+- **KV cache slot pool**: Assign and reuse slots via `LLAMA_SLOT_ID` env var (default: `0`)
 - **LiteLLM**: Embedding provider for search
 - Configurable via `LLAMA_SERVER_URL`, `LLAMA_MODEL`, `LLAMA_SLOT_ID` env vars
+
+### KV Cache Slot Pool
+
+The `LLAMA_SLOT_ID` environment variable controls KV cache slot assignment for llama.cpp inference. This enables slot isolation between the main agent and sub-agents, preventing cache conflicts during concurrent operations.
+
+#### How It Works
+
+1. **Slot pool** parses `LLAMA_SLOT_ID` as a range (e.g., `"0-3"` or `"1-6"`)
+2. **Main agent** gets assigned the first available slot from the pool
+3. **Sub-agents** auto-assign from the remaining pool via `subagents:started` event
+4. **Injection**: `slot_id` is added to every provider request payload
+
+#### Range Format
+
+| Value | Behavior |
+|-------|----------|
+| `0` | Single slot — main agent uses slot 0 (default) |
+| `0-3` | Pool of slots 0, 1, 2, 3 — main agent gets 0, sub-agents get 1–3 |
+| `1-6` | Pool of slots 1–6 — main agent gets 1, sub-agents get 2–6 |
+
+#### Example: Slot Assignment with `LLAMA_SLOT_ID=1-6`
+
+| Agent | Slot |
+|-------|------|
+| Main agent | 1 (first in pool) |
+| Sub-agent 1 | 2 |
+| Sub-agent 2 | 3 |
+| Sub-agent 3 | 4 |
+| Sub-agent 4 | 5 |
+| Sub-agent 5 | 6 |
+| Manual (r.sh 7) | 7 |
+
+#### Key Files
+
+- `pi-llama/index.ts` — Slot pool logic, dynamic main agent slot, short ID alias storage
+- `pi-subagents/src/index.ts` — Emits `agentId` on `subagents:started` event for cross-extension communication
 
 ### CocoIndex Features
 - Semantic code indexing via `ccc` command
