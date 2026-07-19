@@ -5,7 +5,7 @@
   "packages": [
     "git:github.com/aardbeiplantje/pi-llama@feat/llama-slot-id-env-var",
     "npm:pi-mcp-extension",
-    "npm:@tintinweb/pi-subagents",
+    "git:github.com/aardbeiplantje/pi-subagents@feat/llama-slot-id-env-var",
     "npm:pi-searxng-search",
     "npm:pi-smart-fetch",
     "npm:@ayulab/pi-rewind"
