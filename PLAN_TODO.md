@@ -36,6 +36,7 @@ The slot ID system manages llama.cpp KV cache slots to prevent cache eviction wh
 - [x] **Fix `pi.pl` env var name** — `SLOT_ID` → `LLAMA_SLOT_ID` (commit `18b09af`)
 - [x] **Fix llama.cpp API key** — `slot_id` → `id_slot` (commit `3ceff1a`)
 - [x] **Fix slot release** — Clean up both agentId and slot value from pool (commit `05035b1`)
+- [x] **Reserve slot 0 for main agent** — Sub-agents get remaining slots (commit `c68fecf`)
 - [ ] **Investigate full prompt prefill** — Slot 1 used but KV cache not preserved (see issue below)
 - [ ] **Test slot pool with multiple sub-agents** — Verify auto-assignment works when `maxConcurrent > 1`
 
