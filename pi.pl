@@ -287,7 +287,7 @@ $ENV{PI_CODING_AGENT_SESSION_DIR} = "$workspace/.pi/sessions";
 $ENV{LLAMA_SERVER_URL}      //= "http://[::1]:13305";
 $ENV{LLAMA_BASE_URL}        //= $ENV{LLAMA_SERVER_URL};
 $ENV{LLAMA_SERVER_API_KEY}  //= "nokeyneeded";
-$ENV{SLOT_ID}               //= "0";
+$ENV{LLAMA_SLOT_ID}         //= "0";
 $ENV{SEARXNG_URL}           //= "http://localhost:8888";
 exec("/home/node/.npm-global/bin/pi", @ARGV)
     or die "[ERROR] failed to exec pi: $!\n";
