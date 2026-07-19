@@ -190,7 +190,7 @@ RUN pi install git:github.com/aardbeiplantje/pi-llama@${PI_LLAMA_SHA}
 RUN pi install npm:pi-memctx
 RUN pi install npm:@0xkobold/pi-codebase-wiki
 RUN pi install npm:pi-mcp-extension
-RUN pi install npm:@tintinweb/pi-subagents
+RUN pi install git:github.com/aardbeiplantje/pi-subagents@feat/llama-slot-id-env-var
 RUN pi install npm:@termdraw/pi
 RUN pi install npm:pi-searxng-search
 RUN pi install npm:pi-smart-fetch
