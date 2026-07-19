@@ -288,6 +288,7 @@ $ENV{LLAMA_SERVER_URL}      //= "http://[::1]:13305";
 $ENV{LLAMA_BASE_URL}        //= $ENV{LLAMA_SERVER_URL};
 $ENV{LLAMA_SERVER_API_KEY}  //= "nokeyneeded";
 $ENV{LLAMA_SLOT_ID}         //= "0";
+$ENV{PI_LLM_API_COMPAT}     //= "openai-legacy";
 $ENV{SEARXNG_URL}           //= "http://localhost:8888";
 exec("/home/node/.npm-global/bin/pi", @ARGV)
     or die "[ERROR] failed to exec pi: $!\n";
