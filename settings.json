@@ -25,6 +25,8 @@
   },
   "httpIdleTimeoutMs": 3600000,
   "defaultThinkingLevel": "max",
+  "defaultProvider": "llama-cpp",
+  "defaultModel": "Qwen3.6-35B-A3B-ROCMFP4",
   "thinkingBudgets": {
     "minimal": 1024,
     "low": 4096,

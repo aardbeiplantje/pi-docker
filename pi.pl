@@ -210,9 +210,9 @@ if($< == 0){
     symlink("$workspace/.cocoindex", $coco_dir)
         or die "[ERROR] ln -s $workspace/.cocoindex $coco_dir: $!\n";
     my $coco_file   = "$coco_dir/global_settings.yml";
-    my $base_url    = $ENV{LLAMA_SERVER_URL}     // "http://[::1]:8000/v1";
-    my $api_key     = $ENV{LLAMA_SERVER_API_KEY} // "nokeyneeded";
-    my $index_model = $ENV{INDEX_MODEL}          // "embeddinggemma-300M-Q8_0";
+    my $base_url    = $ENV{INDEX_URL}     // $ENV{LLAMA_SERVER_URL}     // "http://[::1]:8000/v1";
+    my $api_key     = $ENV{INDEX_API_KEY} // $ENV{LLAMA_SERVER_API_KEY} // "nokeyneeded";
+    my $index_model = $ENV{INDEX_MODEL}   // "embeddinggemma-300M-Q8_0";
 
     # YAML single-quote strings: escape ' by doubling them
     (my $qurl = $base_url) =~ s/'/''/g;
@@ -285,8 +285,12 @@ $ENV{PI_OFFLINE}            //= 1;
 $ENV{PI_CODING_AGENT_DIR}   //= "/home/node/.pi/agent";
 $ENV{PI_CODING_AGENT_SESSION_DIR} = "$workspace/.pi/sessions";
 $ENV{LLAMA_SERVER_URL}      //= "http://[::1]:8000/v1";
+$ENV{LITELLM_URL}           //= "$ENV{LLAMA_SERVER_URL}/v2";
+$ENV{LLAMA_BASE_URL}          = $ENV{LLAMA_SERVER_URL};
 $ENV{LLAMA_SERVER_API_KEY}  //= "nokeyneeded";
 $ENV{LLAMA_SLOT_ID}         //= "0";
 $ENV{SEARXNG_URL}           //= "http://localhost:8888";
+print "ENV:\n";
+print "$_=$ENV{$_}\n" for grep {defined $ENV{$_}} sort keys %ENV;
 exec("/home/node/.npm-global/bin/pi", @ARGV)
     or die "[ERROR] failed to exec pi: $!\n";

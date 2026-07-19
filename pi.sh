@@ -78,11 +78,14 @@ exec docker run --rm -it \
     ${c_address:+-e CONTAINERD_ADDRESS=$c_address} \
     -e GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" \
     -e LLAMA_SERVER_URL=${LLAMA_SERVER_URL:-http://[::1]:8000/v1} \
+    -e LITELLM_URL=${LITELLM_URL:-http://[::1]:4000/v1} \
     -e LLAMA_SERVER_API_KEY \
     -e LLAMA_MODEL=${LLAMA_MODEL:-qwen3.5:0.8b} \
     -e LLAMA_SLOT_ID=${LLAMA_SLOT_ID:-0} \
-    -e SEARXNG_URL=${SEARXNG_URL:-http://localhost:8888} \
+    -e INDEX_URL \
+    -e INDEX_API_KEY \
     -e INDEX_MODEL=${INDEX_MODEL:-embeddinggemma-300M-Q8_0} \
+    -e SEARXNG_URL=${SEARXNG_URL:-http://localhost:8888} \
     -e GIT_AUTHOR_NAME \
     -e GIT_AUTHOR_EMAIL \
     -e GIT_COMITTER_NAME \
