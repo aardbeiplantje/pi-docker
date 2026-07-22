@@ -76,6 +76,11 @@ exec docker run --rm -it \
     -e BDIR="${BDIR}" \
     ${d_host:+-e DOCKER_HOST=$d_host} \
     ${c_address:+-e CONTAINERD_ADDRESS=$c_address} \
+    ${HF_HOME:+-e HF_HOME=/hf/ -v $HF_HOME:/hf} \
+    ${HF_HUB_CACHE:+-e HF_HUB_CACHE=/hf/hub -v $HF_HUB_CACHE:/hf/hub} \
+    ${HF_TOKEN:+-e HF_TOKEN} \
+    ${HF_HUB_ENABLE_HF_TRANSFER:+-e HF_HUB_ENABLE_HF_TRANSFER} \
+    ${HF_HUB_DISABLE_XET:+-e HF_HUB_DISABLE_XET} \
     -e GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" \
     -e LLAMA_SERVER_URL=${LLAMA_SERVER_URL:-http://[::1]:8000} \
     -e LITELLM_URL=${LITELLM_URL:-http://[::1]:4000/v1} \
