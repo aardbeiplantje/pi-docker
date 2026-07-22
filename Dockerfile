@@ -154,6 +154,12 @@ RUN \
         sqlalchemy comfy_aimdo blake3 alembic comfy_kitchen torchsde \
         || exit $?
 
+RUN \
+    --mount=target=/pip,type=cache,sharing=locked \
+    python3 -m pip install --prefer-binary --upgrade \
+        huggingface_hub==1.19.0 \
+        || exit $?
+
 # Perl
 RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("JSON")'
 RUN PERL5LIB="/home/node/perl5/lib/perl5" perl -MCPAN -e 'CPAN::Shell->install("Crypt::OpenSSL::RSA")'
