@@ -19,9 +19,6 @@ variable "DOCKER_IMAGE_NAME" {
 variable "DOCKER_TAG" {
   default = "latest"
 }
-variable "PI_LLAMA_SHA" {
-  default = "feat/llama-slot-id-env-var"
-}
 variable "CACHEBUST" {
   default = "1"
 }
@@ -30,7 +27,6 @@ target "_common" {
   dockerfile = "Dockerfile"
   platforms = ["linux/amd64"]
   args = {
-    PI_LLAMA_SHA = "${PI_LLAMA_SHA}"
     CACHEBUST    = "${CACHEBUST}"
   }
   networks = ["host"]
