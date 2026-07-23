@@ -192,6 +192,7 @@ RUN npm install -g --ignore-scripts @earendil-works/pi-ai
 RUN npm install -g --ignore-scripts @earendil-works/pi-tui
 RUN pi install npm:fd
 RUN pi install git:github.com/aardbeiplantje/pi-llama@feat/llama-slot-id-env-var
+#RUN pi install git:github.com/aardbeiplantje/pi-llama@ee1a582a0b7407266d9349859ff925fb90afe739
 RUN pi install npm:pi-memctx
 RUN pi install npm:@0xkobold/pi-codebase-wiki
 RUN pi install npm:pi-mcp-extension
