@@ -290,7 +290,7 @@ $ENV{LLAMA_BASE_URL}          = $ENV{LLAMA_SERVER_URL};
 $ENV{LLAMA_SERVER_API_KEY}  //= "nokeyneeded";
 $ENV{LLAMA_SLOT_ID}         //= "0";
 $ENV{SEARXNG_URL}           //= "http://localhost:8888";
-print "ENV:\n";
-print "$_=$ENV{$_}\n" for grep {defined $ENV{$_}} sort keys %ENV;
+#$print "ENV:\n";
+#$print "$_=$ENV{$_}\n" for grep {defined $ENV{$_}} sort keys %ENV;
 exec("/home/node/.npm-global/bin/pi", @ARGV)
     or die "[ERROR] failed to exec pi: $!\n";
