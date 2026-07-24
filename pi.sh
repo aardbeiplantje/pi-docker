@@ -91,6 +91,7 @@ exec docker run --rm -it \
     -e INDEX_API_KEY \
     -e INDEX_MODEL=${INDEX_MODEL:-embeddinggemma-300M-Q8_0} \
     -e SEARXNG_URL=${SEARXNG_URL:-http://localhost:8888} \
+    -e LLAMA_FLM_MODE \
     -e GIT_AUTHOR_NAME \
     -e GIT_AUTHOR_EMAIL \
     -e GIT_COMITTER_NAME \
